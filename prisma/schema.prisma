@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String?
+  image     String?
+  accounts     Account[]
+  authSessions AuthSession[]
+  quizzes        Quiz[]
+  sessionRooms   SessionRoom[]  @relation("UserSessionRooms")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model AuthSession {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_sessions")
+}
+
+model VerificationToken {
+  identifier String   @id
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Quiz {
+  id        String     @id @default(cuid())
+  title     String
+  timeLimit Int
+  teacherId String
+  teacher   User        @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  questions Question[]
+  sessions  SessionRoom[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("quizzes")
+}
+
+model Question {
+  id            String         @id @default(cuid())
+  quizId        String
+  text          String
+  type          QuestionType   @default(SINGLE)
+  order         Int
+  quiz          Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answerOptions AnswerOption[]
+  studentAnswers StudentAnswer[]
+
+  @@map("questions")
+}
+
+model AnswerOption {
+  id         String          @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean         @default(false)
+  question   Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  studentAnswers StudentAnswer[]
+
+  @@map("answer_options")
+}
+
+model SessionRoom {
+  id        String          @id @default(cuid())
+  code      String          @unique
+  quizId    String
+  teacherId String
+  quiz      Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  teacher   User             @relation(fields: [teacherId], references: [id], onDelete: Cascade, name: "UserSessionRooms")
+  status    SessionStatus    @default(LOBBY)
+  startedAt DateTime?
+  endedAt   DateTime?
+  students  Student[]
+  createdAt DateTime         @default(now())
+
+  @@map("sessions")
+}
+
+model Student {
+  id             String          @id @default(cuid())
+  sessionId      String
+  name           String
+  submittedAt    DateTime?
+  session        SessionRoom     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answers        StudentAnswer[]
+  joinedAt       DateTime        @default(now())
+
+  @@map("students")
+}
+
+model StudentAnswer {
+  id             String       @id @default(cuid())
+  studentId      String
+  questionId     String
+  answerOptionId String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  question       Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerOption   AnswerOption @relation(fields: [answerOptionId], references: [id], onDelete: Cascade)
+  selectedAt     DateTime     @default(now())
+
+  @@unique([studentId, questionId, answerOptionId])
+  @@map("student_answers")
+}
+
+enum QuestionType {
+  SINGLE
+  MULTIPLE
+}
+
+enum SessionStatus {
+  LOBBY
+  ACTIVE
+  ENDED
+}

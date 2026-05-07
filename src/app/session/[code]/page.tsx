@@ -1,0 +1,422 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import QRCode from "qrcode";
+import Pusher from "pusher-js";
+import { isPusherConfigured } from "@/lib/use-pusher";
+import { QAvatar, QLogo } from "@/components/q-ui";
+
+type Student = {
+  id: string;
+  name: string;
+  hasSubmitted: boolean;
+  questionsAnswered: number;
+  totalQuestions: number;
+};
+type SessionInfo = { code: string; status: string; quizTitle: string; timeLimit: number };
+type Results = {
+  quizTitle: string; totalQuestions: number;
+  average: number; highest: number; lowest: number;
+  students: { studentId: string; name: string; score: number; total: number; percentage: number; submittedAt: string | null }[];
+};
+
+function fmt(s: number) { return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`; }
+
+export default function SessionPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const params = useParams();
+  const code = params.code as string;
+  const [info, setInfo] = useState<SessionInfo | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+
+  useEffect(() => {
+    if (status === "unauthenticated") router.push("/auth/login");
+    if (status !== "authenticated") return;
+    fetch(`/api/sessions/${code}`).then((r) => r.json()).then((data) => {
+      if (data.error) { router.push("/dashboard"); return; }
+      setInfo(data);
+      generateQR(data.code);
+      if (data.status === "ACTIVE") fetchStudents();
+    });
+  }, [code, status, router]);
+
+  useEffect(() => {
+    if (!info || info.status === "ENDED" || !isPusherConfigured) return;
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, { cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER! });
+    const ch = pusher.subscribe(`room-${code}`);
+    ch.bind("student-joined", (d: { studentId: string; name: string }) => {
+      setStudents((prev) => prev.some((s) => s.id === d.studentId) ? prev : [...prev, { id: d.studentId, name: d.name, hasSubmitted: false, questionsAnswered: 0, totalQuestions: 0 }]);
+    });
+    ch.bind("quiz-started", () => {
+      setInfo((prev) => prev ? { ...prev, status: "ACTIVE" } : prev);
+      fetchStudents();
+      fetch(`/api/sessions/${code}`).then((r) => r.json()).then((d) => {
+        if (d.startedAt) startTimer(new Date(d.startedAt).getTime() + d.timeLimit * 60000);
+      });
+    });
+    ch.bind("quiz-ended", () => { setInfo((prev) => prev ? { ...prev, status: "ENDED" } : prev); setTimeLeft(null); });
+    const tch = pusher.subscribe(`teacher-${code}`);
+    tch.bind("student-submitted", (d: { studentId: string }) => {
+      setStudents((prev) => prev.map((s) => s.id === d.studentId ? { ...s, hasSubmitted: true } : s));
+    });
+    tch.bind("student-progress", (d: { studentId: string; questionsAnswered: number; totalQuestions: number }) => {
+      setStudents((prev) => prev.map((s) => s.id === d.studentId ? { ...s, questionsAnswered: d.questionsAnswered, totalQuestions: d.totalQuestions } : s));
+    });
+    return () => { pusher.unsubscribe(`room-${code}`); pusher.unsubscribe(`teacher-${code}`); pusher.disconnect(); };
+  }, [code, info?.status]);
+
+  async function fetchStudents() {
+    const r = await fetch(`/api/sessions/${code}/students`);
+    if (r.ok) setStudents(await r.json());
+  }
+  function generateQR(c: string) {
+    const url = `${window.location.origin}/join/${c}`;
+    QRCode.toDataURL(url, { width: 200 }, (err, url) => { if (!err) setQrCodeUrl(url); });
+  }
+  function startTimer(endTime: number) {
+    const iv = setInterval(() => {
+      const rem = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+      setTimeLeft(rem);
+      if (rem <= 0) { clearInterval(iv); setInfo((prev) => prev ? { ...prev, status: "ENDED" } : prev); fetchStudents(); }
+    }, 1000);
+  }
+  async function handleStart() {
+    const r = await fetch(`/api/sessions/${code}/start`, { method: "POST" });
+    if (r.ok) {
+      const d = await r.json();
+      setInfo((prev) => prev ? { ...prev, status: "ACTIVE" } : prev);
+      startTimer(new Date(d.startedAt).getTime() + (info?.timeLimit ?? 15) * 60000);
+      fetchStudents();
+    }
+  }
+  async function handleEnd() {
+    await fetch(`/api/sessions/${code}/end`, { method: "POST" });
+    setInfo((prev) => prev ? { ...prev, status: "ENDED" } : prev);
+    setTimeLeft(null);
+  }
+
+  if (!info) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--q-bg)" }}>
+        <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>Loading…</div>
+      </div>
+    );
+  }
+
+  if (info.status === "LOBBY") return <LobbyView info={info} students={students} qrCodeUrl={qrCodeUrl} code={code} onStart={handleStart} />;
+  if (info.status === "ACTIVE") return <LiveView info={info} students={students} timeLeft={timeLeft} code={code} onEnd={handleEnd} />;
+  return <ReportView code={code} onBack={() => router.push("/dashboard")} />;
+}
+
+function LobbyView({ info, students, qrCodeUrl, code, onStart }: { info: SessionInfo; students: Student[]; qrCodeUrl: string; code: string; onStart: () => void }) {
+  const joinUrl = typeof window !== "undefined" ? `${window.location.origin}/join/${code}` : `/join/${code}`;
+  return (
+    <div style={{ display: "flex", height: "100vh", background: "var(--q-bg)" }}>
+      {/* projector half */}
+      <div style={{ flex: "1.4 1 0", background: "var(--q-ink)", color: "var(--q-bg)", display: "flex", flexDirection: "column", padding: 40, justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -120, right: -120, width: 340, height: 340, opacity: 0.12 }} className="q-spike" />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--q-yellow)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--q-display)", fontWeight: 800, fontSize: 18, color: "var(--q-ink)" }}>Q</div>
+            <span style={{ fontWeight: 600, fontSize: 16, fontFamily: "var(--q-sans)" }}>{info.quizTitle}</span>
+            <span className="q-chip q-chip-yellow" style={{ fontSize: 11, color: "var(--q-ink)" }}>LOBBY</span>
+          </div>
+          <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>{info.timeLimit} min</span>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, position: "relative", textAlign: "center" }}>
+          <div className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>
+            Join at <span style={{ color: "var(--q-yellow)" }}>quizly.app/join</span>
+          </div>
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "clamp(80px, 14vw, 160px)", lineHeight: 0.9, letterSpacing: "0.04em" }}>
+            <span style={{ background: "var(--q-yellow)", color: "var(--q-ink)", padding: "0 14px", borderRadius: 16, border: "3px solid var(--q-yellow)" }}>
+              {code}
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 24, marginTop: 8 }}>
+            {qrCodeUrl && (
+              <img src={qrCodeUrl} alt="QR" style={{ width: 100, height: 100, borderRadius: 10, border: "2px solid rgba(255,255,255,0.2)" }} />
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, textAlign: "left" }}>
+              <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>Or scan</span>
+              <span style={{ fontFamily: "var(--q-mono)", fontSize: 14 }}>{joinUrl}</span>
+              <button
+                className="q-btn q-btn-sm q-btn-yellow"
+                onClick={() => navigator.clipboard?.writeText(joinUrl)}
+                style={{ alignSelf: "flex-start" }}
+              >
+                📋 Copy link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+          <div className="q-bar" style={{ flex: 1, background: "rgba(255,255,255,0.15)", borderColor: "rgba(255,255,255,0.3)" }}>
+            <span className="q-bar-fill" style={{ width: students.length > 0 ? "60%" : "0%", background: "var(--q-yellow)" }} />
+          </div>
+          <span style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{students.length} here · waiting for more</span>
+        </div>
+      </div>
+
+      {/* roster */}
+      <div style={{ flex: 1, padding: 28, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <span className="q-eyebrow">In the lobby</span>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 28, letterSpacing: "-0.02em", marginTop: 2 }}>
+              {students.length} students
+            </div>
+          </div>
+          <button className="q-btn q-btn-coral q-btn-lg" onClick={onStart} disabled={students.length === 0}>
+            ▶ Start quiz
+          </button>
+        </div>
+
+        {students.length === 0 ? (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ textAlign: "center", color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>👀</div>
+              Waiting for students to join…
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, overflow: "auto", flex: 1 }}>
+            {students.map((s, i) => (
+              <div key={s.id} className="q-card" style={{ padding: 10, display: "flex", alignItems: "center", gap: 10, boxShadow: "none" }}>
+                <QAvatar name={s.name} size={32} />
+                <span style={{ fontWeight: 600, fontSize: 14, fontFamily: "var(--q-sans)" }}>{s.name}</span>
+                <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, marginLeft: "auto", color: "var(--q-ink-3)" }}>{i < 4 ? "now" : "1m"}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="q-card" style={{ padding: 12, background: "var(--q-yellow-soft)", borderColor: "var(--q-yellow)" }}>
+          <div style={{ fontSize: 14, fontFamily: "var(--q-sans)" }}>
+            <b>Heads up:</b> once you start, late joiners will be locked out.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LiveView({ info, students, timeLeft, code, onEnd }: { info: SessionInfo; students: Student[]; timeLeft: number | null; code: string; onEnd: () => void }) {
+  const total = info.timeLimit * 60;
+  const answered = students.reduce((s, st) => s + st.questionsAnswered, 0);
+  const maxAnswers = students.length * (students[0]?.totalQuestions || 1);
+  const classPct = maxAnswers > 0 ? Math.round((answered / maxAnswers) * 100) : 0;
+  const submitted = students.filter((s) => s.hasSubmitted).length;
+  const active = students.filter((s) => !s.hasSubmitted).length;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "var(--q-bg)", overflow: "hidden" }}>
+      {/* topbar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="q-dot q-dot-live" />
+            <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>LIVE</span>
+          </div>
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22 }}>{info.quizTitle}</div>
+          <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>
+            code <b style={{ color: "var(--q-ink)" }}>{code}</b>
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {timeLeft !== null && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="q-eyebrow">Time left</span>
+              <div
+                style={{
+                  fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 36,
+                  background: timeLeft < 60 ? "var(--q-coral)" : "var(--q-yellow)",
+                  padding: "2px 14px", borderRadius: 10,
+                  border: "1.5px solid var(--q-line)", letterSpacing: "-0.02em",
+                }}
+              >
+                {fmt(timeLeft)}
+              </div>
+            </div>
+          )}
+          <button className="q-btn q-btn-coral q-btn-sm" onClick={onEnd}>End now</button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* left rail: aggregate */}
+        <div style={{ width: 300, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", padding: 20, gap: 16, overflow: "auto", flexShrink: 0 }}>
+          <div className="q-card" style={{ background: "var(--q-ink)", color: "var(--q-bg)", borderColor: "var(--q-line)", padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+            <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>Class progress</span>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 56 }}>
+              {classPct}<span style={{ fontSize: 24, color: "var(--q-yellow)" }}>%</span>
+            </div>
+            <div className="q-bar" style={{ background: "rgba(255,255,255,0.15)", borderColor: "rgba(255,255,255,0.3)" }}>
+              <span className="q-bar-fill" style={{ width: `${classPct}%`, background: "var(--q-yellow)" }} />
+            </div>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontFamily: "var(--q-sans)" }}>
+              {answered} of {maxAnswers} answers in
+            </span>
+          </div>
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <div className="q-card" style={{ flex: 1, padding: 12, background: "var(--q-green-soft)", display: "flex", flexDirection: "column", gap: 2 }}>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 32 }}>{submitted}</div>
+              <span className="q-eyebrow">Submitted</span>
+            </div>
+            <div className="q-card" style={{ flex: 1, padding: 12, background: "var(--q-yellow)", display: "flex", flexDirection: "column", gap: 2 }}>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 32 }}>{active}</div>
+              <span className="q-eyebrow">In progress</span>
+            </div>
+          </div>
+        </div>
+
+        {/* student grid */}
+        <div style={{ flex: 1, padding: 20, overflow: "hidden", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 28, letterSpacing: "-0.02em" }}>Students</div>
+              <span style={{ fontFamily: "var(--q-mono)", fontSize: 13, color: "var(--q-ink-3)" }}>{students.length} connected</span>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12, overflow: "auto", paddingBottom: 8 }}>
+            {[...students].sort((a, b) => b.questionsAnswered - a.questionsAnswered).map((s) => {
+              const done = s.hasSubmitted;
+              const pct = s.totalQuestions > 0 ? (s.questionsAnswered / s.totalQuestions) * 100 : 0;
+              const bg = done ? "var(--q-green-soft)" : "var(--q-bg)";
+              const bar = done ? "var(--q-green)" : "var(--q-indigo)";
+              const total = s.totalQuestions || 12;
+              return (
+                <div key={s.id} className="q-card" style={{ background: bg, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <QAvatar name={s.name} size={36} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 18 }}>{s.name}</div>
+                      <div style={{ fontSize: 12, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>
+                        {done ? "submitted" : `on Q${s.questionsAnswered + 1}`}
+                      </div>
+                    </div>
+                    <span className="q-chip" style={{ fontSize: 10, background: "var(--q-bg)" }}>
+                      {done ? "✓ done" : "answering…"}
+                    </span>
+                  </div>
+                  <div className="q-bar q-bar-thin">
+                    <span className="q-bar-fill" style={{ width: `${pct}%`, background: bar }} />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, color: "var(--q-ink-3)" }}>
+                      {s.questionsAnswered}/{total} answered
+                    </span>
+                    <div style={{ display: "flex", gap: 2 }}>
+                      {Array.from({ length: total }).map((_, k) => (
+                        <span key={k} style={{ width: 8, height: 8, borderRadius: 2, background: k < s.questionsAnswered ? bar : "var(--q-bg-3)" }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
+  const [results, setResults] = useState<Results | null>(null);
+  useEffect(() => { fetch(`/api/sessions/${code}/results`).then((r) => r.json()).then(setResults); }, [code]);
+
+  if (!results) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>Loading results…</div>
+      </div>
+    );
+  }
+
+  const sorted = [...results.students].sort((a, b) => b.percentage - a.percentage);
+  const top = sorted.filter((s) => s.percentage === results.highest);
+  const bottom = sorted.filter((s) => s.percentage === results.lowest);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "var(--q-bg)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px", borderBottom: "1px solid var(--q-line-2)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span className="q-chip q-chip-green" style={{ fontSize: 11 }}>✓ ENDED</span>
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22 }}>
+            {results.quizTitle} — Results
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="q-btn q-btn-sm" onClick={onBack}>Back to dashboard</button>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflow: "auto", padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* hero stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div className="q-card" style={{ padding: 20, background: "var(--q-yellow)", display: "flex", flexDirection: "column", gap: 6 }}>
+            <span className="q-eyebrow">Class average</span>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 64 }}>{results.average}<span style={{ fontSize: 28 }}>%</span></div>
+          </div>
+          <div className="q-card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+            <span className="q-eyebrow" style={{ color: "var(--q-green)" }}>↑ Highest</span>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 52 }}>{results.highest}%</div>
+            <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
+              {top.map((s) => <QAvatar key={s.studentId} name={s.name} size={24} />)}
+              <span style={{ fontSize: 13, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>{top.map((s) => s.name).join(", ")}</span>
+            </div>
+          </div>
+          <div className="q-card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+            <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>↓ Lowest</span>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 52 }}>{results.lowest}%</div>
+            <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+              {bottom.slice(0, 2).map((s) => <QAvatar key={s.studentId} name={s.name} size={24} />)}
+            </div>
+          </div>
+          <div className="q-card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+            <span className="q-eyebrow">Submitted</span>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 52 }}>
+              {results.students.length}/{results.students.length}
+            </div>
+            <span style={{ fontSize: 13, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>100% participation</span>
+          </div>
+        </div>
+
+        {/* results table */}
+        <div className="q-card" style={{ overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
+            <div>Student</div><div>Score</div><div>Percent</div><div>Time</div>
+          </div>
+          {sorted.map((s) => (
+            <div key={s.studentId} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr", padding: "12px 16px", borderBottom: "1px solid var(--q-line-2)", alignItems: "center", fontSize: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <QAvatar name={s.name} size={28} />
+                <b style={{ fontFamily: "var(--q-sans)" }}>{s.name}</b>
+              </div>
+              <div style={{ fontFamily: "var(--q-mono)" }}>{s.score}/{s.total}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div className="q-bar q-bar-thin" style={{ width: 80 }}>
+                  <span className="q-bar-fill" style={{ width: `${s.percentage}%`, background: s.percentage >= 75 ? "var(--q-green)" : s.percentage >= 50 ? "var(--q-yellow)" : "var(--q-coral)" }} />
+                </div>
+                <span style={{ fontFamily: "var(--q-mono)", fontSize: 12 }}>{s.percentage}%</span>
+              </div>
+              <div style={{ fontFamily: "var(--q-mono)", color: "var(--q-ink-3)", fontSize: 12 }}>
+                {s.submittedAt ? new Date(s.submittedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
