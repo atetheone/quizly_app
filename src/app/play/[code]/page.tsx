@@ -2,24 +2,18 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import Pusher from "pusher-js";
 import { isPusherConfigured } from "@/lib/use-pusher";
+import { QLogo, QAvatar } from "@/components/q-ui";
 
 type AnswerOption = { id: string; text: string };
-type Question = {
-  id: string;
-  text: string;
-  type: "SINGLE" | "MULTIPLE";
-  order: number;
-  answerOptions: AnswerOption[];
-};
-
+type Question = { id: string; text: string; type: "SINGLE" | "MULTIPLE"; order: number; answerOptions: AnswerOption[] };
 type Phase = "lobby" | "countdown" | "active" | "waiting" | "results";
+
+const OPTION_COLORS = ["var(--q-coral-soft)", "var(--q-yellow-soft)", "var(--q-indigo-soft)", "var(--q-green-soft)"];
+const LETTERS = ["A", "B", "C", "D", "E", "F"];
+
+function fmt(s: number) { return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`; }
 
 export default function PlayPage() {
   const params = useParams();
@@ -29,86 +23,51 @@ export default function PlayPage() {
   const [studentName, setStudentName] = useState("");
   const [sessionInfo, setSessionInfo] = useState<{ quizTitle: string; timeLimit: number } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentQ, setCurrentQ] = useState(0);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [countdown, setCountdown] = useState(3);
   const [results, setResults] = useState<{
-    score: number;
-    total: number;
-    percentage: number;
-    questions: {
-      id: string;
-      text: string;
-      type: string;
-      isCorrect: boolean;
-      answerOptions: { id: string; text: string; isCorrect: boolean; isSelected: boolean }[];
-    }[];
+    score: number; total: number; percentage: number;
+    questions: { id: string; text: string; type: string; isCorrect: boolean; answerOptions: { id: string; text: string; isCorrect: boolean; isSelected: boolean }[] }[];
   } | null>(null);
-  const [students, setStudents] = useState<string[]>([]);
+  const [lobbyStudents, setLobbyStudents] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const sid = sessionStorage.getItem("studentId");
     const sname = sessionStorage.getItem("studentName");
-    if (!sid || !sname) {
-      window.location.href = `/join/${code}`;
-      return;
-    }
+    if (!sid || !sname) { window.location.href = `/join/${code}`; return; }
     setStudentId(sid);
     setStudentName(sname);
-
     fetch(`/api/sessions/${code}`).then((r) => r.json()).then((data) => {
       if (data.error) return;
       setSessionInfo({ quizTitle: data.quizTitle, timeLimit: data.timeLimit });
-      if (data.status === "ACTIVE") {
-        fetchQuiz();
-      }
+      if (data.status === "ACTIVE") { fetchQuiz(); }
     });
   }, [code]);
 
   useEffect(() => {
     if (!isPusherConfigured) return;
-
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-    });
-
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, { cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER! });
     const channel = pusher.subscribe(`room-${code}`);
-
-    channel.bind("student-joined", (data: { name: string }) => {
-      setStudents((prev) => [...prev, data.name]);
-    });
-
+    channel.bind("student-joined", (d: { name: string }) => { setLobbyStudents((p) => [...p, d.name]); });
     channel.bind("quiz-started", () => {
       setCountdown(3);
       setPhase("countdown");
       let c = 3;
-      const interval = setInterval(() => {
+      const iv = setInterval(() => {
         c--;
         setCountdown(c);
-        if (c <= 0) {
-          clearInterval(interval);
-          setPhase("active");
-          fetchQuiz();
-          startTimer();
-        }
+        if (c <= 0) { clearInterval(iv); setPhase("active"); fetchQuiz(); startTimer(); }
       }, 1000);
     });
-
     channel.bind("quiz-ended", () => {
-      if (submitted) {
-        fetchResults();
-      } else {
-        handleSubmit();
-      }
+      if (submitted) { fetchResults(); } else { handleSubmit(); }
       setPhase("results");
     });
-
-    return () => {
-      pusher.unsubscribe(`room-${code}`);
-      pusher.disconnect();
-    };
+    return () => { pusher.unsubscribe(`room-${code}`); pusher.disconnect(); };
   }, [code, submitted]);
 
   async function fetchQuiz() {
@@ -117,8 +76,7 @@ export default function PlayPage() {
       const data = await res.json();
       setQuestions(data.questions);
       const endTime = new Date(data.startedAt).getTime() + data.timeLimit * 60 * 1000;
-      const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-      setTimeLeft(remaining);
+      setTimeLeft(Math.max(0, Math.floor((endTime - Date.now()) / 1000)));
     }
   }
 
@@ -127,26 +85,17 @@ export default function PlayPage() {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev === null) return null;
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          if (!submitted) handleSubmit();
-          return 0;
-        }
+        if (prev <= 1) { if (timerRef.current) clearInterval(timerRef.current); if (!submitted) handleSubmit(); return 0; }
         return prev - 1;
       });
     }, 1000);
   }
 
-  function handleAnswer(questionId: string, optionId: string, type: "SINGLE" | "MULTIPLE") {
+  function handleAnswer(qId: string, optId: string, type: "SINGLE" | "MULTIPLE") {
     setAnswers((prev) => {
-      if (type === "SINGLE") {
-        return { ...prev, [questionId]: [optionId] };
-      }
-      const current = prev[questionId] || [];
-      const next = current.includes(optionId)
-        ? current.filter((id) => id !== optionId)
-        : [...current, optionId];
-      return { ...prev, [questionId]: next };
+      if (type === "SINGLE") return { ...prev, [qId]: [optId] };
+      const cur = prev[qId] || [];
+      return { ...prev, [qId]: cur.includes(optId) ? cur.filter((id) => id !== optId) : [...cur, optId] };
     });
   }
 
@@ -154,11 +103,7 @@ export default function PlayPage() {
     if (submitted) return;
     setSubmitted(true);
     setPhase("waiting");
-
-    const payload = Object.entries(answers).flatMap(([questionId, optionIds]) =>
-      optionIds.map((answerOptionId) => ({ questionId, answerOptionId }))
-    );
-
+    const payload = Object.entries(answers).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
     await fetch(`/api/sessions/${code}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -168,167 +113,318 @@ export default function PlayPage() {
 
   async function fetchResults() {
     const res = await fetch(`/api/sessions/${code}/student-results?studentId=${studentId}`);
-    if (res.ok) {
-      const data = await res.json();
-      setResults(data);
-      setPhase("results");
-    }
+    if (res.ok) { setResults(await res.json()); setPhase("results"); }
   }
 
+  // ─── Lobby ───
   if (phase === "lobby") {
     return (
-      <div className="flex items-center justify-center min-h-screen px-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle className="text-2xl">{sessionInfo?.quizTitle || "Waiting for teacher..."}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">You&apos;re in the lobby. Wait for the teacher to start the quiz.</p>
-            <div className="text-lg font-medium">Welcome, {studentName}!</div>
-            {students.length > 0 && (
-              <div className="text-sm text-muted-foreground">{students.length} other student(s) in the lobby</div>
-            )}
-          </CardContent>
-        </Card>
+      <div style={{ minHeight: "100vh", background: "var(--q-bg)", display: "flex", flexDirection: "column" }}>
+        <div style={{ background: "var(--q-indigo)", color: "#fff", padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{code}</span>
+            <span className="q-chip q-chip-yellow" style={{ fontSize: 11, color: "var(--q-ink)" }}>WAITING</span>
+          </div>
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 28, color: "#fff", letterSpacing: "-0.025em" }}>
+            {sessionInfo?.quizTitle ?? "Waiting…"}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+            <QAvatar name={studentName} size={36} />
+            <div>
+              <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>You</span>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 18, color: "#fff" }}>{studentName}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", gap: 12, overflow: "auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span className="q-eyebrow">In the lobby</span>
+            <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>{lobbyStudents.length + 1} here</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            {[studentName, ...lobbyStudents].map((n, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: 8, background: "var(--q-bg-2)", borderRadius: 10 }}>
+                <QAvatar name={n} size={24} />
+                <span style={{ fontSize: 14, fontWeight: 500, fontFamily: "var(--q-sans)" }}>{n}</span>
+                {i === 0 && <span className="q-chip q-chip-yellow" style={{ fontSize: 10, marginLeft: "auto" }}>you</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ padding: 20, borderTop: "1px solid var(--q-line-2)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <div style={{ display: "flex", gap: 4 }}>
+            {[0, 1, 2].map((i) => (
+              <span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--q-ink-3)", opacity: 0.3 + i * 0.2, animation: `pulse ${1 + i * 0.3}s infinite` }} />
+            ))}
+          </div>
+          <span style={{ fontSize: 14, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>Waiting for teacher to start…</span>
+        </div>
       </div>
     );
   }
 
+  // ─── Countdown ───
   if (phase === "countdown") {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-9xl font-bold animate-pulse">{countdown > 0 ? countdown : "Go!"}</div>
+      <div style={{ minHeight: "100vh", background: "var(--q-yellow)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, textAlign: "center", padding: 20 }}>
+        <span className="q-eyebrow">Get ready</span>
+        <div style={{ position: "relative", width: 240, height: 240, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ position: "absolute", inset: 0, opacity: 0.3 }} className="q-spike" />
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 200, lineHeight: 1, color: "var(--q-ink)", position: "relative" }}>
+            {countdown > 0 ? countdown : "!"}
+          </div>
+        </div>
+        <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 24, letterSpacing: "-0.02em" }}>
+          {sessionInfo?.quizTitle}
+        </div>
+        <div style={{ fontSize: 15, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)" }}>
+          {questions.length} questions · {sessionInfo?.timeLimit}m · go at your own pace
         </div>
       </div>
     );
   }
 
+  // ─── Active ───
+  if (phase === "active" && questions.length > 0) {
+    const q = questions[currentQ];
+    const selectedOpts = answers[q.id] || [];
+    const answeredCount = Object.keys(answers).length;
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--q-bg)" }}>
+        {/* sticky header */}
+        <div style={{ position: "sticky", top: 0, background: "var(--q-bg)", borderBottom: "1px solid var(--q-line-2)", padding: 16, display: "flex", flexDirection: "column", gap: 10, zIndex: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>
+              QUESTION {currentQ + 1} / {questions.length}
+            </span>
+            {timeLeft !== null && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 14 }}>⏱</span>
+                <span style={{ fontFamily: "var(--q-mono)", fontSize: 16, fontWeight: 600, color: timeLeft < 60 ? "var(--q-coral)" : "var(--q-ink)" }}>
+                  {fmt(timeLeft)}
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="q-bar q-bar-thin">
+            <span className="q-bar-fill" style={{ width: `${((currentQ + 1) / questions.length) * 100}%`, background: "var(--q-indigo)" }} />
+          </div>
+          {/* question nav dots */}
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            {questions.map((_, i) => {
+              const answered = !!answers[questions[i].id];
+              const current = i === currentQ;
+              return (
+                <div
+                  key={i}
+                  onClick={() => setCurrentQ(i)}
+                  style={{
+                    width: 24, height: 24, borderRadius: 5, cursor: "pointer",
+                    border: "1.5px solid " + (current ? "var(--q-ink)" : "var(--q-line-2)"),
+                    background: answered ? "var(--q-ink)" : current ? "var(--q-yellow)" : "var(--q-bg)",
+                    color: answered ? "var(--q-bg)" : "var(--q-ink)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "var(--q-mono)", fontWeight: 600, fontSize: 11,
+                  }}
+                >
+                  {i + 1}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* body */}
+        <div style={{ flex: 1, padding: "20px 20px 0", display: "flex", flexDirection: "column", gap: 16 }}>
+          {q.type === "MULTIPLE" && (
+            <span className="q-chip q-chip-yellow" style={{ alignSelf: "flex-start", fontSize: 11 }}>SELECT ALL THAT APPLY</span>
+          )}
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 26, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+            {q.text}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {q.answerOptions.map((opt, oi) => {
+              const selected = selectedOpts.includes(opt.id);
+              return (
+                <div
+                  key={opt.id}
+                  onClick={() => handleAnswer(q.id, opt.id, q.type)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: 14,
+                    background: selected ? "var(--q-ink)" : "var(--q-bg)",
+                    color: selected ? "var(--q-bg)" : "var(--q-ink)",
+                    border: "1.5px solid " + (selected ? "var(--q-line)" : "var(--q-line-2)"),
+                    borderRadius: 14, cursor: "pointer",
+                    boxShadow: selected ? "var(--q-stamp-soft)" : "none",
+                    transition: "background 0.1s, box-shadow 0.1s",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 36, height: 36, borderRadius: 8, flexShrink: 0,
+                      background: OPTION_COLORS[oi] ?? "var(--q-bg-3)",
+                      border: "1.5px solid var(--q-line)", color: "var(--q-ink)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 16,
+                    }}
+                  >
+                    {LETTERS[oi]}
+                  </div>
+                  <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 17, flex: 1 }}>{opt.text}</span>
+                  <div
+                    style={{
+                      width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                      background: selected ? "var(--q-yellow)" : "transparent",
+                      border: "1.5px solid " + (selected ? "var(--q-ink)" : "var(--q-line-2)"),
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontWeight: 700, color: "var(--q-ink)", fontSize: 14,
+                    }}
+                  >
+                    {selected ? "✓" : ""}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* footer */}
+        <div style={{ position: "sticky", bottom: 0, background: "var(--q-bg)", borderTop: "1px solid var(--q-line-2)", padding: 16, display: "flex", gap: 8 }}>
+          <button className="q-btn q-btn-sm" disabled={currentQ === 0} onClick={() => setCurrentQ((p) => p - 1)}>←</button>
+          {currentQ < questions.length - 1 ? (
+            <button className="q-btn q-btn-primary" style={{ flex: 1 }} onClick={() => setCurrentQ((p) => p + 1)}>
+              Next →
+            </button>
+          ) : (
+            <button className="q-btn q-btn-primary" style={{ flex: 1 }} onClick={() => handleSubmit()} disabled={submitted}>
+              {answeredCount < questions.length ? `Submit (${answeredCount}/${questions.length} answered)` : "Submit quiz ✓"}
+            </button>
+          )}
+          {currentQ < questions.length - 1 && (
+            <button className="q-btn q-btn-coral q-btn-sm" onClick={() => handleSubmit()} disabled={submitted}>
+              Submit
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Waiting ───
   if (phase === "waiting") {
     return (
-      <div className="flex items-center justify-center min-h-screen px-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle className="text-2xl">Submitted!</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">Waiting for the quiz to end. Results will appear here.</p>
-          </CardContent>
-        </Card>
+      <div style={{ minHeight: "100vh", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: 24, textAlign: "center" }}>
+        <div style={{ fontSize: 56 }}>🎉</div>
+        <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 36, letterSpacing: "-0.025em", lineHeight: 1.05 }}>
+          Nice work,<br />{studentName}.
+        </div>
+        <div className="q-card" style={{ padding: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "var(--q-bg)" }}>
+          <span className="q-eyebrow">Results unlock when timer ends</span>
+        </div>
+        <p style={{ fontSize: 15, color: "var(--q-ink-2)", maxWidth: 280, margin: 0, lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>
+          Your answers are in. Results appear when the whole class is done.
+        </p>
       </div>
     );
   }
 
+  // ─── Results ───
   if (phase === "results" && results) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">Your Results</h1>
-          <div className="text-5xl font-bold mt-4">
-            {results.percentage}%
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--q-bg)" }}>
+        {/* score header */}
+        <div style={{ background: "var(--q-yellow)", padding: "28px 24px 20px", position: "relative", overflow: "hidden", textAlign: "center", borderBottom: "1.5px solid var(--q-line)" }}>
+          <div style={{ position: "absolute", top: -60, left: -60, width: 200, height: 200, opacity: 0.25 }} className="q-spike" />
+          <span className="q-eyebrow" style={{ position: "relative" }}>Your score</span>
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 80, lineHeight: 1, position: "relative" }}>
+            {results.score}<span style={{ fontSize: 36, color: "var(--q-ink-3)" }}>/{results.total}</span>
           </div>
-          <p className="text-muted-foreground mt-2">
-            {results.score} out of {results.total} correct
-          </p>
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 20, position: "relative" }}>
+            {results.percentage}%
+            {results.percentage >= 80 ? " — excellent!" : results.percentage >= 60 ? " — well done!" : " — keep going!"}
+          </div>
+          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 10, position: "relative" }}>
+            <span className="q-chip" style={{ background: "var(--q-bg)", fontSize: 11 }}>
+              {results.score}/{results.total} correct
+            </span>
+          </div>
         </div>
-        <div className="space-y-4">
+
+        {/* answer review */}
+        <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", gap: 12, overflow: "auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span className="q-eyebrow">Answer review</span>
+            <div style={{ display: "flex", gap: 3 }}>
+              {results.questions.map((q, i) => (
+                <span key={i} style={{ width: 14, height: 14, borderRadius: 3, background: q.isCorrect ? "var(--q-green)" : "var(--q-coral)" }} />
+              ))}
+            </div>
+          </div>
+
           {results.questions.map((q, qi) => (
-            <Card key={q.id} className={q.isCorrect ? "border-green-500" : "border-red-500"}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">
-                  {qi + 1}. {q.text}
-                  <span className={`ml-2 text-sm ${q.isCorrect ? "text-green-600" : "text-red-600"}`}>
-                    {q.isCorrect ? "Correct" : "Incorrect"}
+            <div
+              key={q.id}
+              className="q-card"
+              style={{
+                padding: 14,
+                background: q.isCorrect ? "var(--q-green-soft)" : "var(--q-coral-soft)",
+                borderColor: q.isCorrect ? "var(--q-green)" : "var(--q-coral)",
+                display: "flex", flexDirection: "column", gap: 8,
+              }}
+            >
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span
+                  className="q-chip"
+                  style={{
+                    background: q.isCorrect ? "var(--q-green)" : "var(--q-coral)",
+                    color: "#fff", fontSize: 11, borderColor: "var(--q-ink)",
+                  }}
+                >
+                  {q.isCorrect ? "✓ correct" : "✗ wrong"}
+                </span>
+                <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, color: "var(--q-ink-3)" }}>Q{qi + 1}</span>
+                {q.type === "MULTIPLE" && <span className="q-chip" style={{ fontSize: 10, background: "var(--q-bg)" }}>multiple</span>}
+              </div>
+              <div style={{ fontWeight: 600, fontSize: 15, fontFamily: "var(--q-sans)" }}>{q.text}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {q.answerOptions.map((opt) => (
+                  <span
+                    key={opt.id}
+                    className="q-chip"
+                    style={{
+                      background: opt.isCorrect && opt.isSelected ? "var(--q-green-soft)"
+                        : opt.isCorrect ? "var(--q-green-soft)"
+                        : opt.isSelected ? "var(--q-bg)"
+                        : "transparent",
+                      borderColor: opt.isCorrect ? "var(--q-green)" : opt.isSelected ? "var(--q-coral)" : "var(--q-line-2)",
+                      textDecoration: opt.isSelected && !opt.isCorrect ? "line-through" : "none",
+                      fontSize: 12,
+                    }}
+                  >
+                    {opt.text}
+                    {opt.isCorrect ? " ✓" : ""}
+                    {opt.isSelected && !opt.isCorrect ? " ✗" : ""}
                   </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  {q.answerOptions.map((opt) => (
-                    <div
-                      key={opt.id}
-                      className={`px-3 py-2 rounded text-sm ${
-                        opt.isCorrect && opt.isSelected
-                          ? "bg-green-100 text-green-800"
-                          : opt.isCorrect
-                          ? "bg-green-50 text-green-700"
-                          : opt.isSelected
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-50 text-gray-600"
-                      }`}
-                    >
-                      {opt.text}
-                      {opt.isCorrect && " ✓"}
-                      {opt.isSelected && !opt.isCorrect && " ✗"}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                ))}
+              </div>
+            </div>
           ))}
+        </div>
+
+        <div style={{ padding: 16, borderTop: "1px solid var(--q-line-2)", display: "flex", justifyContent: "center" }}>
+          <button className="q-btn" onClick={() => window.location.href = "/"}>Done</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      {timeLeft !== null && (
-        <div className="text-center mb-6">
-          <div className="text-3xl font-mono font-bold">
-            {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
-          </div>
-          <p className="text-sm text-muted-foreground">remaining</p>
-        </div>
-      )}
-      <div className="space-y-6">
-        {questions.map((q, qi) => (
-          <Card key={q.id}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">
-                {qi + 1}. {q.text}
-                {q.type === "MULTIPLE" && (
-                  <span className="text-sm text-muted-foreground ml-2">(Select all that apply)</span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {q.type === "SINGLE" ? (
-                <RadioGroup
-                  value={answers[q.id]?.[0] || ""}
-                  onValueChange={(val) => handleAnswer(q.id, val, "SINGLE")}
-                  className="space-y-2"
-                >
-                  {q.answerOptions.map((opt) => (
-                    <div key={opt.id} className="flex items-center space-x-2">
-                      <RadioGroupItem value={opt.id} id={`${q.id}-${opt.id}`} />
-                      <Label htmlFor={`${q.id}-${opt.id}`} className="flex-1 cursor-pointer">{opt.text}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              ) : (
-                <div className="space-y-2">
-                  {q.answerOptions.map((opt) => (
-                    <div key={opt.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${q.id}-${opt.id}`}
-                        checked={answers[q.id]?.includes(opt.id) || false}
-                        onCheckedChange={() => handleAnswer(q.id, opt.id, "MULTIPLE")}
-                      />
-                      <Label htmlFor={`${q.id}-${opt.id}`} className="flex-1 cursor-pointer">{opt.text}</Label>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <div className="mt-8 text-center">
-        <Button size="lg" onClick={() => handleSubmit()} disabled={submitted}>
-          {submitted ? "Submitted" : "Submit Quiz"}
-        </Button>
-      </div>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+      <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>Loading…</div>
     </div>
   );
 }

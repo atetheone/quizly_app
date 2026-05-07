@@ -4,269 +4,179 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
-type AnswerOption = {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-};
+type AnswerOption = { id: string; text: string; isCorrect: boolean };
+type QuestionData = { id: string; text: string; type: "SINGLE" | "MULTIPLE"; order: number; answerOptions: AnswerOption[] };
+type QuizData = { id: string; title: string; timeLimit: number; questions: QuestionData[] };
 
-type QuestionData = {
-  id: string;
-  text: string;
-  type: "SINGLE" | "MULTIPLE";
-  order: number;
-  answerOptions: AnswerOption[];
-};
-
-type QuizData = {
-  id: string;
-  title: string;
-  timeLimit: number;
-  questions: QuestionData[];
-};
+const OPTION_COLORS = ["var(--q-coral-soft)", "var(--q-yellow-soft)", "var(--q-indigo-soft)", "var(--q-green-soft)", "var(--q-bg-3)", "var(--q-yellow-soft)"];
+const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
 export default function EditQuizPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-
   const [title, setTitle] = useState("");
   const [timeLimit, setTimeLimit] = useState(15);
   const [questions, setQuestions] = useState<QuestionData[]>([]);
+  const [activeQ, setActiveQ] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/auth/login");
     if (status !== "authenticated") return;
-
-    fetch(`/api/quizzes/${id}`)
-      .then((res) => res.json())
-      .then((data: QuizData) => {
-        setTitle(data.title);
-        setTimeLimit(data.timeLimit);
-        setQuestions(data.questions);
-        setLoading(false);
-      });
+    fetch(`/api/quizzes/${id}`).then((r) => r.json()).then((data: QuizData) => {
+      setTitle(data.title); setTimeLimit(data.timeLimit); setQuestions(data.questions); setLoading(false);
+    });
   }, [id, status, router]);
 
   function updateQuestionType(index: number, type: "SINGLE" | "MULTIPLE") {
-    setQuestions((prev) =>
-      prev.map((q, i) => {
-        if (i !== index) return q;
-        const resetOptions = q.answerOptions.map((o) => ({ ...o, isCorrect: false }));
-        return { ...q, type, answerOptions: resetOptions };
-      })
-    );
+    setQuestions((prev) => prev.map((q, i) => i !== index ? q : { ...q, type, answerOptions: q.answerOptions.map((o) => ({ ...o, isCorrect: false })) }));
   }
-
   function updateOptionText(qIndex: number, oIndex: number, text: string) {
-    setQuestions((prev) =>
-      prev.map((q, i) =>
-        i === qIndex
-          ? {
-              ...q,
-              answerOptions: q.answerOptions.map((o, j) => (j === oIndex ? { ...o, text } : o)),
-            }
-          : q
-      )
-    );
+    setQuestions((prev) => prev.map((q, i) => i !== qIndex ? q : { ...q, answerOptions: q.answerOptions.map((o, j) => j === oIndex ? { ...o, text } : o) }));
   }
-
   function toggleCorrect(qIndex: number, oIndex: number) {
-    setQuestions((prev) =>
-      prev.map((q, i) => {
-        if (i !== qIndex) return q;
-        if (q.type === "SINGLE") {
-          return {
-            ...q,
-            answerOptions: q.answerOptions.map((o, j) => ({ ...o, isCorrect: j === oIndex })),
-          };
-        }
-        return {
-          ...q,
-          answerOptions: q.answerOptions.map((o, j) =>
-            j === oIndex ? { ...o, isCorrect: !o.isCorrect } : o
-          ),
-        };
-      })
-    );
+    setQuestions((prev) => prev.map((q, i) => {
+      if (i !== qIndex) return q;
+      if (q.type === "SINGLE") return { ...q, answerOptions: q.answerOptions.map((o, j) => ({ ...o, isCorrect: j === oIndex })) };
+      return { ...q, answerOptions: q.answerOptions.map((o, j) => j === oIndex ? { ...o, isCorrect: !o.isCorrect } : o) };
+    }));
   }
-
   function addOption(qIndex: number) {
     if (questions[qIndex].answerOptions.length >= 6) return;
-    setQuestions((prev) =>
-      prev.map((q, i) =>
-        i === qIndex
-          ? {
-              ...q,
-              answerOptions: [
-                ...q.answerOptions,
-                { id: `new-${Date.now()}`, text: "", isCorrect: false },
-              ],
-            }
-          : q
-      )
-    );
+    setQuestions((prev) => prev.map((q, i) => i !== qIndex ? q : { ...q, answerOptions: [...q.answerOptions, { id: `new-${Date.now()}`, text: "", isCorrect: false }] }));
   }
-
   function removeOption(qIndex: number, oIndex: number) {
     if (questions[qIndex].answerOptions.length <= 2) return;
-    setQuestions((prev) =>
-      prev.map((q, i) =>
-        i === qIndex
-          ? { ...q, answerOptions: q.answerOptions.filter((_, j) => j !== oIndex) }
-          : q
-      )
-    );
+    setQuestions((prev) => prev.map((q, i) => i !== qIndex ? q : { ...q, answerOptions: q.answerOptions.filter((_, j) => j !== oIndex) }));
   }
-
   function addQuestion() {
     if (questions.length >= 20) return;
-    setQuestions((prev) => [
-      ...prev,
-      {
-        id: `new-${Date.now()}`,
-        text: "",
-        type: "SINGLE",
-        order: prev.length + 1,
-        answerOptions: [
-          { id: `opt-${Date.now()}-1`, text: "", isCorrect: false },
-          { id: `opt-${Date.now()}-2`, text: "", isCorrect: false },
-        ],
-      },
-    ]);
+    const ts = Date.now();
+    setQuestions((prev) => [...prev, { id: `new-${ts}`, text: "", type: "SINGLE", order: prev.length + 1, answerOptions: [{ id: `opt-${ts}-1`, text: "", isCorrect: false }, { id: `opt-${ts}-2`, text: "", isCorrect: false }] }]);
+    setActiveQ(questions.length);
   }
-
   function removeQuestion(index: number) {
     if (questions.length <= 1) return;
     setQuestions((prev) => prev.filter((_, i) => i !== index));
+    setActiveQ((prev) => Math.min(prev, questions.length - 2));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     setSaving(true);
-
-    const payload = {
-      title,
-      timeLimit,
-      questions: questions.map((q, i) => ({
-        text: q.text,
-        type: q.type,
-        order: i + 1,
-        answerOptions: q.answerOptions.map((a) => ({
-          text: a.text,
-          isCorrect: a.isCorrect,
-        })),
-      })),
-    };
-
-    const res = await fetch(`/api/quizzes/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
-      toast.success("Quiz updated!");
-      router.push("/dashboard");
-    } else {
-      const data = await res.json();
-      toast.error(data.error || "Failed to update quiz");
-      setSaving(false);
-    }
+    const payload = { title, timeLimit, questions: questions.map((q, i) => ({ text: q.text, type: q.type, order: i + 1, answerOptions: q.answerOptions.map((a) => ({ text: a.text, isCorrect: a.isCorrect })) })) };
+    const res = await fetch(`/api/quizzes/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    if (res.ok) { toast.success("Quiz updated!"); router.push("/dashboard"); }
+    else { const d = await res.json(); toast.error(d.error || "Failed to update quiz"); setSaving(false); }
   }
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  if (loading) {
+    return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--q-bg)" }}><div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>Loading…</div></div>;
+  }
+
+  const q = questions[activeQ];
+  if (!q) return null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Edit Quiz</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Quiz Title</Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={200} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
-              <Input id="timeLimit" type="number" min={1} max={120} value={timeLimit} onChange={(e) => setTimeLimit(Number(e.target.value))} required />
-            </div>
-          </CardContent>
-        </Card>
-
-        {questions.map((q, qi) => (
-          <Card key={q.id}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Question {qi + 1}</CardTitle>
-                {questions.length > 1 && (
-                  <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => removeQuestion(qi)}>
-                    Remove
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Question Text</Label>
-                <Input value={q.text} onChange={(e) => setQuestions((prev) => prev.map((qq, i) => i === qi ? { ...qq, text: e.target.value } : qq))} required />
-              </div>
-              <div className="space-y-2">
-                <Label>Answer Type</Label>
-                <RadioGroup value={q.type} onValueChange={(v) => updateQuestionType(qi, v as "SINGLE" | "MULTIPLE")} className="flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="SINGLE" id={`type-single-${qi}`} />
-                    <Label htmlFor={`type-single-${qi}`}>Pick One</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="MULTIPLE" id={`type-multiple-${qi}`} />
-                    <Label htmlFor={`type-multiple-${qi}`}>Pick Multiple</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label>Answer Options (mark correct ones)</Label>
-                {q.answerOptions.map((opt, oi) => (
-                  <div key={opt.id} className="flex items-center gap-2">
-                    {q.type === "SINGLE" ? (
-                      <input type="radio" name={`correct-${qi}`} checked={opt.isCorrect} onChange={() => toggleCorrect(qi, oi)} className="h-4 w-4" />
-                    ) : (
-                      <Checkbox checked={opt.isCorrect} onCheckedChange={() => toggleCorrect(qi, oi)} />
-                    )}
-                    <Input value={opt.text} onChange={(e) => updateOptionText(qi, oi, e.target.value)} required className="flex-1" />
-                    {q.answerOptions.length > 2 && (
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeOption(qi, oi)}>&times;</Button>
-                    )}
-                  </div>
-                ))}
-                {q.answerOptions.length < 6 && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => addOption(qi)}>Add Option</Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-
-        {questions.length < 20 && (
-          <Button type="button" variant="outline" onClick={addQuestion} className="w-full">+ Add Question</Button>
-        )}
-
-        <div className="flex justify-end gap-2">
-          <Link href="/dashboard"><Button type="button" variant="outline">Cancel</Button></Link>
-          <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save Changes"}</Button>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "var(--q-bg)", overflow: "hidden" }}>
+      {/* topbar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Link href="/dashboard" className="q-btn q-btn-ghost q-btn-sm">← Dashboard</Link>
+          <input
+            className="q-input"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={{ width: 280, fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 16, border: "none", background: "transparent", outline: "none", padding: "4px 0" }}
+          />
+          <span className="q-chip q-chip-green" style={{ fontSize: 11 }}>EDITING</span>
         </div>
-      </form>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <span className="q-eyebrow">Time limit</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <input type="number" min={1} max={120} value={timeLimit} onChange={(e) => setTimeLimit(Number(e.target.value))} style={{ width: 52, border: "1.5px solid var(--q-line)", borderRadius: 6, padding: "3px 6px", fontFamily: "var(--q-mono)", fontSize: 13, background: "var(--q-bg)" }} />
+              <span style={{ fontSize: 12, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>min</span>
+            </div>
+          </div>
+          <button className="q-btn q-btn-primary q-btn-sm" onClick={handleSubmit} disabled={saving}>{saving ? "Saving…" : "Save changes"}</button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* rail */}
+        <div style={{ width: 280, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", padding: 16, gap: 10, overflow: "auto", flexShrink: 0 }}>
+          <span className="q-eyebrow">Questions · {questions.length} of 20</span>
+          {questions.map((q, i) => (
+            <div key={q.id} onClick={() => setActiveQ(i)} style={{ display: "flex", gap: 8, padding: 12, borderRadius: 10, cursor: "pointer", background: i === activeQ ? "var(--q-ink)" : "var(--q-bg)", color: i === activeQ ? "var(--q-bg)" : "var(--q-ink)", border: "1.5px solid " + (i === activeQ ? "var(--q-line)" : "var(--q-line-2)"), alignItems: "flex-start" }}>
+              <span style={{ opacity: 0.5, fontSize: 12, marginTop: 2 }}>≡</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
+                  <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, opacity: 0.7 }}>Q{i + 1}</span>
+                  <span className="q-chip" style={{ fontSize: 10, padding: "1px 8px", background: "transparent", borderColor: i === activeQ ? "rgba(255,255,255,0.3)" : "var(--q-line-2)", color: i === activeQ ? "var(--q-bg)" : "var(--q-ink-3)" }}>{q.type.toLowerCase()}</span>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{q.text || "Untitled"}</div>
+              </div>
+              {questions.length > 1 && <button onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} style={{ background: "none", border: "none", cursor: "pointer", color: i === activeQ ? "rgba(255,255,255,0.5)" : "var(--q-ink-4)", fontSize: 14, padding: "0 2px" }}>×</button>}
+            </div>
+          ))}
+          {questions.length < 20 && <button className="q-btn q-btn-sm" style={{ alignSelf: "stretch", justifyContent: "center" }} onClick={addQuestion}>＋ Add question</button>}
+        </div>
+
+        {/* editor */}
+        <div style={{ flex: 1, padding: 36, overflow: "auto", display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <span className="q-eyebrow">Question {activeQ + 1} of {questions.length}</span>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 28, letterSpacing: "-0.02em", marginTop: 4 }}>Editing</div>
+            </div>
+            <div style={{ display: "flex", gap: 4, padding: 4, background: "var(--q-bg-2)", border: "1.5px solid var(--q-line)", borderRadius: 999 }}>
+              {(["SINGLE", "MULTIPLE"] as const).map((t) => (
+                <button key={t} className="q-btn q-btn-sm" style={{ background: q.type === t ? "var(--q-ink)" : "transparent", color: q.type === t ? "var(--q-bg)" : "var(--q-ink-2)", border: "none", boxShadow: "none" }} onClick={() => updateQuestionType(activeQ, t)}>
+                  {t === "SINGLE" ? "● Single answer" : "☰ Multiple answers"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <span className="q-eyebrow">Question</span>
+            <textarea className="q-input" value={q.text} onChange={(e) => setQuestions((prev) => prev.map((qq, i) => i === activeQ ? { ...qq, text: e.target.value } : qq))} placeholder="Type your question here…" rows={2} style={{ fontSize: 22, fontFamily: "var(--q-display)", fontWeight: 600, resize: "vertical", letterSpacing: "-0.01em" }} />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span className="q-eyebrow">Answer options · {q.answerOptions.length} of 6</span>
+              <span style={{ fontSize: 13, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>Mark the correct answer ✓</span>
+            </div>
+            {q.answerOptions.map((opt, oi) => (
+              <div key={opt.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, background: OPTION_COLORS[oi] ?? "var(--q-bg-3)", border: "1.5px solid var(--q-line)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 18 }}>
+                  {LETTERS[oi]}
+                </div>
+                <input className="q-input" style={{ flex: 1, fontSize: 16 }} value={opt.text} onChange={(e) => updateOptionText(activeQ, oi, e.target.value)} placeholder={`Option ${LETTERS[oi]}`} />
+                <button className="q-btn q-btn-sm" style={{ background: opt.isCorrect ? "var(--q-green)" : "var(--q-bg)", color: opt.isCorrect ? "#fff" : "var(--q-ink)", borderColor: opt.isCorrect ? "var(--q-ink)" : "var(--q-line-2)", minWidth: 120 }} onClick={() => toggleCorrect(activeQ, oi)}>
+                  {opt.isCorrect ? "✓ Correct" : "Mark correct"}
+                </button>
+                {q.answerOptions.length > 2 && <button onClick={() => removeOption(activeQ, oi)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--q-ink-4)", fontSize: 18, padding: "0 4px" }}>×</button>}
+              </div>
+            ))}
+            {q.answerOptions.length < 6 && <button className="q-btn q-btn-sm" style={{ alignSelf: "flex-start" }} onClick={() => addOption(activeQ)}>＋ Add option</button>}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: "auto" }}>
+            <button className="q-btn q-btn-sm" disabled={activeQ === 0} onClick={() => setActiveQ((p) => p - 1)}>← Previous</button>
+            {activeQ < questions.length - 1
+              ? <button className="q-btn q-btn-primary q-btn-sm" onClick={() => setActiveQ((p) => p + 1)}>Next question →</button>
+              : <button className="q-btn q-btn-primary q-btn-sm" onClick={handleSubmit} disabled={saving}>{saving ? "Saving…" : "Save quiz ✓"}</button>
+            }
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
