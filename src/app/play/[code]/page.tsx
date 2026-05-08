@@ -144,7 +144,7 @@ export default function PlayPage() {
         <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", gap: 12, overflow: "auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span className="q-eyebrow">In the lobby</span>
-            <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>{lobbyStudents.length + 1} here</span>
+            <span aria-live="polite" style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>{lobbyStudents.length + 1} here</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
             {[studentName, ...lobbyStudents].map((n, i) => (
@@ -176,7 +176,7 @@ export default function PlayPage() {
         <span className="q-eyebrow">Get ready</span>
         <div style={{ position: "relative", width: "min(240px, 65vw)", height: "min(240px, 65vw)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", inset: 0, opacity: 0.3 }} className="q-spike" />
-          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "min(200px, 54vw)", lineHeight: 1, color: "var(--q-ink)", position: "relative" }}>
+          <div aria-live="assertive" aria-atomic="true" style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "min(200px, 54vw)", lineHeight: 1, color: "var(--q-ink)", position: "relative" }}>
             {countdown > 0 ? countdown : "!"}
           </div>
         </div>
@@ -206,8 +206,11 @@ export default function PlayPage() {
             </span>
             {timeLeft !== null && (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 14 }}>⏱</span>
-                <span style={{ fontFamily: "var(--q-mono)", fontSize: 16, fontWeight: 600, color: timeLeft < 60 ? "var(--q-coral)" : "var(--q-ink)" }}>
+                <span aria-hidden="true" style={{ fontSize: 14 }}>⏱</span>
+                <span
+                  aria-label={`Time remaining: ${fmt(timeLeft)}`}
+                  style={{ fontFamily: "var(--q-mono)", fontSize: 16, fontWeight: 600, color: timeLeft < 60 ? "var(--q-coral)" : "var(--q-ink)" }}
+                >
                   {fmt(timeLeft)}
                 </span>
               </div>
@@ -217,13 +220,16 @@ export default function PlayPage() {
             <span className="q-bar-fill" style={{ width: `${((currentQ + 1) / questions.length) * 100}%`, background: "var(--q-indigo)" }} />
           </div>
           {/* question nav dots */}
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div role="group" aria-label="Question navigation" style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
             {questions.map((_, i) => {
               const answered = !!answers[questions[i].id];
               const current = i === currentQ;
               return (
-                <div
+                <button
                   key={i}
+                  type="button"
+                  aria-label={`Question ${i + 1}${answered ? ", answered" : ""}${current ? " (current)" : ""}`}
+                  aria-current={current ? "true" : undefined}
                   onClick={() => setCurrentQ(i)}
                   style={{
                     width: 24, height: 24, borderRadius: 5, cursor: "pointer",
@@ -232,10 +238,11 @@ export default function PlayPage() {
                     color: answered ? "var(--q-bg)" : "var(--q-ink)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontFamily: "var(--q-mono)", fontWeight: 600, fontSize: 11,
+                    padding: 0,
                   }}
                 >
                   {i + 1}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -250,12 +257,19 @@ export default function PlayPage() {
             {q.text}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div
+            role={q.type === "SINGLE" ? "radiogroup" : "group"}
+            aria-label="Answer options"
+            style={{ display: "flex", flexDirection: "column", gap: 10 }}
+          >
             {q.answerOptions.map((opt, oi) => {
               const selected = selectedOpts.includes(opt.id);
               return (
-                <div
+                <button
                   key={opt.id}
+                  type="button"
+                  role={q.type === "SINGLE" ? "radio" : "checkbox"}
+                  aria-checked={selected}
                   onClick={() => handleAnswer(q.id, opt.id, q.type)}
                   style={{
                     display: "flex", alignItems: "center", gap: 12, padding: 14,
@@ -265,9 +279,11 @@ export default function PlayPage() {
                     borderRadius: 14, cursor: "pointer",
                     boxShadow: selected ? "var(--q-stamp-soft)" : "none",
                     transition: "background 0.1s, box-shadow 0.1s",
+                    width: "100%", textAlign: "left",
                   }}
                 >
                   <div
+                    aria-hidden="true"
                     style={{
                       width: 36, height: 36, borderRadius: 8, flexShrink: 0,
                       background: OPTION_COLORS[oi] ?? "var(--q-bg-3)",
@@ -280,6 +296,7 @@ export default function PlayPage() {
                   </div>
                   <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 17, flex: 1 }}>{opt.text}</span>
                   <div
+                    aria-hidden="true"
                     style={{
                       width: 24, height: 24, borderRadius: 6, flexShrink: 0,
                       background: selected ? "var(--q-yellow)" : "transparent",
@@ -290,7 +307,7 @@ export default function PlayPage() {
                   >
                     {selected ? "✓" : ""}
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -322,7 +339,7 @@ export default function PlayPage() {
   if (phase === "waiting") {
     return (
       <div style={{ minHeight: "100vh", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: 24, textAlign: "center" }}>
-        <div style={{ fontSize: 56 }}>🎉</div>
+        <div aria-hidden="true" style={{ fontSize: 56 }}>🎉</div>
         <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 36, letterSpacing: "-0.025em", lineHeight: 1.05 }}>
           Nice work,<br />{studentName}.
         </div>
@@ -362,9 +379,9 @@ export default function PlayPage() {
         <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", gap: 12, overflow: "auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span className="q-eyebrow">Answer review</span>
-            <div style={{ display: "flex", gap: 3 }}>
+            <div aria-label={`${results.questions.filter(q => q.isCorrect).length} correct, ${results.questions.filter(q => !q.isCorrect).length} wrong`} style={{ display: "flex", gap: 3 }}>
               {results.questions.map((q, i) => (
-                <span key={i} style={{ width: 14, height: 14, borderRadius: 3, background: q.isCorrect ? "var(--q-green)" : "var(--q-coral)" }} />
+                <span key={i} aria-hidden="true" style={{ width: 14, height: 14, borderRadius: 3, background: q.isCorrect ? "var(--q-green)" : "var(--q-coral)" }} />
               ))}
             </div>
           </div>

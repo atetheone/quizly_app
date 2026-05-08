@@ -122,6 +122,11 @@
     color: var(--q-ink);
     -webkit-font-smoothing: antialiased;
   }
+  :focus-visible {
+    outline: 3px solid var(--q-yellow);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 /* ─── Quizly components ─── */

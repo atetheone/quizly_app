@@ -53,19 +53,26 @@ export default function JoinPage() {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <input
-            className="q-input"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
-            placeholder="A3F7K2"
-            maxLength={6}
-            required
-            style={{ fontFamily: "var(--q-mono)", fontSize: "clamp(20px, 7vw, 32px)", letterSpacing: "0.15em", textAlign: "center", textTransform: "uppercase", padding: "16px 14px" }}
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label htmlFor="room-code" className="q-eyebrow">Room code</label>
+            <input
+              id="room-code"
+              className="q-input"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
+              placeholder="A3F7K2"
+              maxLength={6}
+              required
+              autoComplete="off"
+              inputMode="text"
+              style={{ fontFamily: "var(--q-mono)", fontSize: "clamp(20px, 7vw, 32px)", letterSpacing: "0.15em", textAlign: "center", textTransform: "uppercase", padding: "16px 14px" }}
+            />
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span className="q-eyebrow">Your name</span>
+            <label htmlFor="student-name" className="q-eyebrow">Your name</label>
             <input
+              id="student-name"
               className="q-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -77,7 +84,7 @@ export default function JoinPage() {
           </div>
 
           {error && (
-            <div style={{ background: "var(--q-coral-soft)", border: "1.5px solid var(--q-coral)", borderRadius: "var(--q-r-sm)", padding: "10px 14px", fontSize: 14, fontFamily: "var(--q-sans)" }}>
+            <div role="alert" style={{ background: "var(--q-coral-soft)", border: "1.5px solid var(--q-coral)", borderRadius: "var(--q-r-sm)", padding: "10px 14px", fontSize: 14, fontFamily: "var(--q-sans)" }}>
               {error}
             </div>
           )}
@@ -88,10 +95,12 @@ export default function JoinPage() {
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ flex: 1, height: 1, background: "var(--q-line-2)" }} />
-            <span className="q-eyebrow">or</span>
+            <span className="q-eyebrow" aria-hidden="true">or</span>
             <div style={{ flex: 1, height: 1, background: "var(--q-line-2)" }} />
           </div>
-          <button type="button" className="q-btn" style={{ width: "100%" }}>📷 Scan QR code</button>
+          <button type="button" className="q-btn" style={{ width: "100%" }}>
+            <span aria-hidden="true">📷</span> Scan QR code
+          </button>
         </form>
       </div>
     </div>

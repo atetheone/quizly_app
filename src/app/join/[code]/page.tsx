@@ -66,8 +66,9 @@ export default function JoinWithCodePage() {
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span className="q-eyebrow">Your name</span>
+            <label htmlFor="student-name" className="q-eyebrow">Your name</label>
             <input
+              id="student-name"
               className="q-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -80,7 +81,7 @@ export default function JoinWithCodePage() {
           </div>
 
           {error && (
-            <div style={{ background: "var(--q-coral-soft)", border: "1.5px solid var(--q-coral)", borderRadius: "var(--q-r-sm)", padding: "10px 14px", fontSize: 14, fontFamily: "var(--q-sans)" }}>
+            <div role="alert" style={{ background: "var(--q-coral-soft)", border: "1.5px solid var(--q-coral)", borderRadius: "var(--q-r-sm)", padding: "10px 14px", fontSize: 14, fontFamily: "var(--q-sans)" }}>
               {error}
             </div>
           )}
