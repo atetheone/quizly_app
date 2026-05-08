@@ -12,7 +12,10 @@ export async function GET() {
 
     const quizzes = await prisma.quiz.findMany({
       where: { teacherId: session.user.id },
-      include: { _count: { select: { questions: true } } },
+      include: {
+        _count: { select: { questions: true } },
+        sessions: { select: { status: true } },
+      },
       orderBy: { updatedAt: "desc" },
     });
 
@@ -24,6 +27,7 @@ export async function GET() {
         questionCount: q._count.questions,
         createdAt: q.createdAt,
         updatedAt: q.updatedAt,
+        isLocked: q.sessions.some((s) => s.status === "ACTIVE" || s.status === "ENDED"),
       }))
     );
   } catch {

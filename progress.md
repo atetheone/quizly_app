@@ -97,12 +97,12 @@
 - [x] Student results API (score + answer review)
 - [x] Teacher post-session report API (aggregate stats)
 
-### Phase 8: Quiz Lock & Duplicate (next up)
-- [ ] Enforce quiz lock in `PUT /api/quizzes/[id]` — reject edits if any Session is ACTIVE or ENDED
-- [ ] `POST /api/quizzes/[id]/duplicate` — create a copy with title "Copy of {original}", cloning all questions and answer options
-- [ ] Dashboard card UI — show lock badge on locked quizzes, hide Edit button, show Duplicate as primary action
-- [ ] Dashboard card UI — show Duplicate as secondary action on unlocked quizzes
-- [ ] Delete quiz confirmation dialog — warn that all session results will also be deleted (cascade)
+### Phase 8: Quiz Lock & Duplicate
+- [x] Enforce quiz lock in `PUT /api/quizzes/[id]` — reject edits if any Session is ACTIVE or ENDED
+- [x] `POST /api/quizzes/[id]/duplicate` — create a copy with title "Copy of {original}", cloning all questions and answer options
+- [x] Dashboard card UI — show lock badge on locked quizzes, hide Edit button, show Duplicate as primary action
+- [x] Dashboard card UI — show Duplicate as secondary action on unlocked quizzes
+- [x] Delete quiz confirmation dialog — warn that all session results will also be deleted (cascade)
 
 ### Phase 7: Polish & Deployment
 - [x] Docker Compose for PostgreSQL (postgres:16-alpine)

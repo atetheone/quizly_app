@@ -13,6 +13,7 @@ type QuizListItem = {
   questionCount: number;
   createdAt: string;
   updatedAt: string;
+  isLocked: boolean;
 };
 
 const EMOJIS = ["🧬","📜","➗","🇪🇸","⚗️","📖","🌍","🔬","📐","🎭","🏛️","🌱","💡","🎵","🔭"];
@@ -48,10 +49,32 @@ export default function DashboardPage() {
       .then((data) => { setQuizzes(data); setLoading(false); });
   }, [status]);
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this quiz?")) return;
-    const res = await fetch(`/api/quizzes/${id}`, { method: "DELETE" });
-    if (res.ok) setQuizzes((prev) => prev.filter((q) => q.id !== id));
+  async function handleDelete(quiz: QuizListItem) {
+    const warning = quiz.isLocked
+      ? "This quiz has session results. Deleting it will permanently remove all associated results.\n\nDelete anyway?"
+      : "Delete this quiz?";
+    if (!confirm(warning)) return;
+    const res = await fetch(`/api/quizzes/${quiz.id}`, { method: "DELETE" });
+    if (res.ok) setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+  }
+
+  async function handleDuplicate(id: string) {
+    const res = await fetch(`/api/quizzes/${id}/duplicate`, { method: "POST" });
+    if (res.ok) {
+      const copy = await res.json();
+      setQuizzes((prev) => [
+        {
+          id: copy.id,
+          title: copy.title,
+          timeLimit: copy.timeLimit,
+          questionCount: copy.questions?.length ?? 0,
+          createdAt: copy.createdAt,
+          updatedAt: copy.updatedAt,
+          isLocked: false,
+        },
+        ...prev,
+      ]);
+    }
   }
 
   async function handleStartSession(quizId: string) {
@@ -169,6 +192,19 @@ export default function DashboardPage() {
                   }}
                 >
                   <div style={{ fontSize: 32 }}>{quizEmoji(quiz.title)}</div>
+                  {quiz.isLocked && (
+                    <span
+                      style={{
+                        position: "absolute", top: 12, right: 12,
+                        background: "var(--q-ink)", color: "var(--q-bg)",
+                        fontSize: 10, fontFamily: "var(--q-sans)", fontWeight: 700,
+                        padding: "2px 7px", borderRadius: 20, letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      🔒 Locked
+                    </span>
+                  )}
                 </div>
                 <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
                   <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 18, letterSpacing: "-0.01em" }}>
@@ -185,8 +221,19 @@ export default function DashboardPage() {
                     <button className="q-btn q-btn-primary q-btn-sm" style={{ flex: 1 }} onClick={() => handleStartSession(quiz.id)}>
                       ▶ Start session
                     </button>
-                    <Link href={`/quiz/${quiz.id}/edit`} className="q-btn q-btn-sm">Edit</Link>
-                    <button className="q-btn q-btn-sm" style={{ color: "var(--q-coral)", borderColor: "var(--q-coral)" }} onClick={() => handleDelete(quiz.id)}>
+                    {quiz.isLocked ? (
+                      <button className="q-btn q-btn-sm" onClick={() => handleDuplicate(quiz.id)}>
+                        ⧉ Duplicate
+                      </button>
+                    ) : (
+                      <>
+                        <Link href={`/quiz/${quiz.id}/edit`} className="q-btn q-btn-sm">Edit</Link>
+                        <button className="q-btn q-btn-sm" onClick={() => handleDuplicate(quiz.id)}>
+                          ⧉
+                        </button>
+                      </>
+                    )}
+                    <button className="q-btn q-btn-sm" style={{ color: "var(--q-coral)", borderColor: "var(--q-coral)" }} onClick={() => handleDelete(quiz)}>
                       ×
                     </button>
                   </div>

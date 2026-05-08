@@ -44,9 +44,20 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const quiz = await prisma.quiz.findUnique({ where: { id } });
+    const quiz = await prisma.quiz.findUnique({
+      where: { id },
+      include: { sessions: { select: { status: true } } },
+    });
     if (!quiz || quiz.teacherId !== session.user.id) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const isLocked = quiz.sessions.some((s) => s.status === "ACTIVE" || s.status === "ENDED");
+    if (isLocked) {
+      return NextResponse.json(
+        { error: "Quiz is locked because it has been used in a session. Duplicate it to make changes." },
+        { status: 409 }
+      );
     }
 
     const body = await request.json();
