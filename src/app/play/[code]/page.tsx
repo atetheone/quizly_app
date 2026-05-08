@@ -35,6 +35,7 @@ export default function PlayPage() {
   const [lobbyStudents, setLobbyStudents] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     const sid = sessionStorage.getItem("studentId");
@@ -64,9 +65,13 @@ export default function PlayPage() {
         if (c <= 0) { clearInterval(iv); setPhase("active"); fetchQuiz(); startTimer(); }
       }, 1000);
     });
-    channel.bind("quiz-ended", () => {
-      if (submitted) { fetchResults(); } else { handleSubmit(); }
-      setPhase("results");
+    channel.bind("quiz-ended", async () => {
+      if (submittedRef.current) {
+        await fetchResults();
+      } else {
+        await handleSubmit();
+        await fetchResults();
+      }
     });
     return () => { pusher.unsubscribe(`room-${code}`); pusher.disconnect(); };
   }, [code, submitted]);
@@ -86,7 +91,11 @@ export default function PlayPage() {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev === null) return null;
-        if (prev <= 1) { if (timerRef.current) clearInterval(timerRef.current); if (!submitted) handleSubmit(); return 0; }
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          if (!submittedRef.current) handleSubmit();
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
@@ -101,7 +110,8 @@ export default function PlayPage() {
   }
 
   const handleSubmit = useCallback(async () => {
-    if (submitted) return;
+    if (submittedRef.current) return;
+    submittedRef.current = true;
     setSubmitted(true);
     setPhase("waiting");
     const payload = Object.entries(answers).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
@@ -113,11 +123,14 @@ export default function PlayPage() {
     if (!res.ok) {
       toast.error("Failed to submit answers. Your progress has been saved locally.");
     }
-  }, [answers, code, studentId, submitted]);
+  }, [answers, code, studentId]);
 
   async function fetchResults() {
     const res = await fetch(`/api/sessions/${code}/student-results?studentId=${studentId}`);
-    if (res.ok) { setResults(await res.json()); setPhase("results"); }
+    if (res.ok) {
+      setResults(await res.json());
+      setPhase("results");
+    }
   }
 
   // ─── Lobby ───
