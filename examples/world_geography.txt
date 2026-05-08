@@ -1,0 +1,71 @@
+Question: What is the capital of Australia?
+A) Sydney
+B) Melbourne
+C) Canberra (correct)
+D) Brisbane
+
+Question: Which is the longest river in the world?
+A) Amazon
+B) Nile (correct)
+C) Yangtze
+D) Mississippi
+
+Question: Which country has the most natural lakes in the world?
+A) Russia
+B) USA
+C) Canada (correct)
+D) Finland
+
+Question: What is the smallest country in the world by area?
+A) Monaco
+B) San Marino
+C) Vatican City (correct)
+D) Liechtenstein
+
+Question: Which continent has the most countries?
+A) Asia
+B) Africa (correct)
+C) Europe
+D) South America
+
+Question: What is the tallest mountain in the world?
+A) K2
+B) Kangchenjunga
+C) Mount Everest (correct)
+D) Lhotse
+
+Question: Which ocean is the largest by surface area?
+A) Atlantic Ocean
+B) Indian Ocean
+C) Pacific Ocean (correct)
+D) Arctic Ocean
+
+Question: What is the capital of Brazil?
+A) Rio de Janeiro
+B) São Paulo
+C) Brasília (correct)
+D) Salvador
+
+Question: Which country shares the longest border with the USA?
+A) Mexico
+B) Canada (correct)
+C) Russia
+D) Cuba
+
+Question: What is the name of the strait separating Europe from Africa?
+A) Strait of Dover
+B) Strait of Hormuz
+C) Strait of Gibraltar (correct)
+D) Bosphorus Strait
+
+Question: In which country is the Sahara Desert mostly located?
+A) Egypt
+B) Libya
+C) Algeria (correct)
+D) Sudan
+
+Question: Which city is known as the "City of Canals"?
+A) Amsterdam
+B) Venice (correct)
+C) Bangkok
+D) Bruges

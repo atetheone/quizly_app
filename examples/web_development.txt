@@ -1,0 +1,71 @@
+Question: What does HTML stand for?
+A) Hyper Text Markup Language (correct)
+B) High Tech Modern Language
+C) Hyper Transfer Markup Language
+D) Home Tool Markup Language
+
+Question: Which CSS property controls the space between the content and the border of an element?
+A) margin
+B) spacing
+C) padding (correct)
+D) gap
+
+Question: What does the "C" stand for in CSS?
+A) Computer
+B) Cascading (correct)
+C) Coded
+D) Creative
+
+Question: Which HTTP method is typically used to update an existing resource?
+A) GET
+B) POST
+C) PUT (correct)
+D) DELETE
+
+Question: What does JSON stand for?
+A) JavaScript Object Notation (correct)
+B) Java Simple Object Notation
+C) JavaScript Ordered Numbers
+D) Java Syntax Object Naming
+
+Question: Which of the following is NOT a JavaScript data type? (select all that apply)
+A) undefined
+B) float (correct)
+C) symbol
+D) character (correct)
+
+Question: What is the purpose of the "async/await" syntax in JavaScript?
+A) To run code in parallel threads
+B) To handle promises more readably (correct)
+C) To declare asynchronous variables
+D) To delay code execution
+
+Question: In React, what hook is used to manage local component state?
+A) useEffect
+B) useContext
+C) useState (correct)
+D) useReducer
+
+Question: What does "REST" stand for in REST API?
+A) Reliable Endpoint State Transfer
+B) Representational State Transfer (correct)
+C) Remote Execution State Transfer
+D) Resource Endpoint Standard Template
+
+Question: Which HTTP status code means "Not Found"?
+A) 401
+B) 403
+C) 404 (correct)
+D) 500
+
+Question: What is the box model in CSS? (select all that apply)
+A) Content (correct)
+B) Padding (correct)
+C) Border (correct)
+D) Margin (correct)
+
+Question: Which of the following is a JavaScript framework?
+A) Django
+B) Laravel
+C) Next.js (correct)
+D) Flask

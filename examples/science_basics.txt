@@ -1,0 +1,71 @@
+Question: What is the chemical symbol for water?
+A) WA
+B) HO
+C) H2O (correct)
+D) OW
+
+Question: How many planets are in our solar system?
+A) 7
+B) 8 (correct)
+C) 9
+D) 10
+
+Question: What force keeps planets in orbit around the Sun?
+A) Magnetism
+B) Gravity (correct)
+C) Nuclear force
+D) Friction
+
+Question: What is the speed of light in a vacuum (approximately)?
+A) 100,000 km/s
+B) 300,000 km/s (correct)
+C) 500,000 km/s
+D) 1,000,000 km/s
+
+Question: What is the powerhouse of the cell?
+A) Nucleus
+B) Ribosome
+C) Mitochondria (correct)
+D) Endoplasmic reticulum
+
+Question: What gas do plants absorb during photosynthesis?
+A) Oxygen
+B) Nitrogen
+C) Carbon dioxide (correct)
+D) Hydrogen
+
+Question: What is the atomic number of carbon?
+A) 4
+B) 6 (correct)
+C) 8
+D) 12
+
+Question: Which of Newton's laws states that every action has an equal and opposite reaction?
+A) First law
+B) Second law
+C) Third law (correct)
+D) Law of gravitation
+
+Question: What is the SI unit of electric current?
+A) Volt
+B) Watt
+C) Ampere (correct)
+D) Ohm
+
+Question: DNA stands for?
+A) Deoxyribonucleic Acid (correct)
+B) Diribonucleic Acid
+C) Double Nuclear Acid
+D) Deoxyribose Nucleotide Arrangement
+
+Question: What is absolute zero in Celsius?
+A) -100°C
+B) -200°C
+C) -273.15°C (correct)
+D) -300°C
+
+Question: Which planet is known as the Red Planet?
+A) Venus
+B) Jupiter
+C) Mars (correct)
+D) Saturn
