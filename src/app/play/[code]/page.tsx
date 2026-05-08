@@ -36,6 +36,7 @@ export default function PlayPage() {
   const [submitted, setSubmitted] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
+  const answersRef = useRef<Record<string, string[]>>({});
 
   useEffect(() => {
     const sid = sessionStorage.getItem("studentId");
@@ -103,9 +104,15 @@ export default function PlayPage() {
 
   function handleAnswer(qId: string, optId: string, type: "SINGLE" | "MULTIPLE") {
     setAnswers((prev) => {
-      if (type === "SINGLE") return { ...prev, [qId]: [optId] };
-      const cur = prev[qId] || [];
-      return { ...prev, [qId]: cur.includes(optId) ? cur.filter((id) => id !== optId) : [...cur, optId] };
+      const next =
+        type === "SINGLE"
+          ? { ...prev, [qId]: [optId] }
+          : (() => {
+              const cur = prev[qId] || [];
+              return { ...prev, [qId]: cur.includes(optId) ? cur.filter((id) => id !== optId) : [...cur, optId] };
+            })();
+      answersRef.current = next;
+      return next;
     });
   }
 
@@ -114,7 +121,7 @@ export default function PlayPage() {
     submittedRef.current = true;
     setSubmitted(true);
     setPhase("waiting");
-    const payload = Object.entries(answers).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
+    const payload = Object.entries(answersRef.current).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
     const res = await fetch(`/api/sessions/${code}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -123,7 +130,7 @@ export default function PlayPage() {
     if (!res.ok) {
       toast.error("Failed to submit answers. Your progress has been saved locally.");
     }
-  }, [answers, code, studentId]);
+  }, [code, studentId]);
 
   async function fetchResults() {
     const res = await fetch(`/api/sessions/${code}/student-results?studentId=${studentId}`);
