@@ -132,9 +132,9 @@ export default function SessionPage() {
 function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { info: SessionInfo; students: Student[]; qrCodeUrl: string; code: string; onStart: () => void; starting: boolean }) {
   const joinUrl = typeof window !== "undefined" ? `${window.location.origin}/join/${code}` : `/join/${code}`;
   return (
-    <div style={{ display: "flex", height: "100vh", background: "var(--q-bg)" }}>
+    <div className="q-lobby-split" style={{ display: "flex", height: "100vh", background: "var(--q-bg)" }}>
       {/* projector half */}
-      <div style={{ flex: "1.4 1 0", background: "var(--q-ink)", color: "var(--q-bg)", display: "flex", flexDirection: "column", padding: 40, justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
+      <div className="q-lobby-projector" style={{ flex: "1.4 1 0", background: "var(--q-ink)", color: "var(--q-bg)", display: "flex", flexDirection: "column", padding: 40, justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -120, right: -120, width: 340, height: 340, opacity: 0.12 }} className="q-spike" />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -267,9 +267,9 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
         </div>
       </div>
 
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div className="q-live-split" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* left rail: aggregate */}
-        <div style={{ width: 300, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", padding: 20, gap: 16, overflow: "auto", flexShrink: 0 }}>
+        <div className="q-live-rail" style={{ width: 300, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", padding: 20, gap: 16, overflow: "auto", flexShrink: 0 }}>
           <div className="q-card" style={{ background: "var(--q-ink)", color: "var(--q-bg)", borderColor: "var(--q-line)", padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
             <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>Class progress</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 56 }}>
@@ -380,7 +380,7 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
 
       <div style={{ flex: 1, overflow: "auto", padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
         {/* hero stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="q-report-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           <div className="q-card" style={{ padding: 20, background: "var(--q-yellow)", display: "flex", flexDirection: "column", gap: 6 }}>
             <span className="q-eyebrow">Class average</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 64 }}>{results.average}<span style={{ fontSize: 28 }}>%</span></div>
@@ -410,7 +410,8 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
         </div>
 
         {/* results table */}
-        <div className="q-card" style={{ overflow: "hidden" }}>
+        <div className="q-card q-report-table-wrap" style={{ overflow: "hidden" }}>
+          <div className="q-report-table-inner">
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
             <div>Student</div><div>Score</div><div>Percent</div><div>Time</div>
           </div>
@@ -432,6 +433,7 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
               </div>
             </div>
           ))}
+          </div>
         </div>
       </div>
     </div>

@@ -212,3 +212,23 @@
 }
 
 .q-display { font-family: var(--q-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+
+/* ─── Responsive breakpoints ─── */
+@media (max-width: 640px) {
+  /* Dashboard: hide sidebar, full-width main */
+  .q-sidebar { display: none !important; }
+
+  /* Session lobby: stack columns */
+  .q-lobby-split { flex-direction: column !important; height: auto !important; min-height: 100vh !important; }
+  .q-lobby-projector { flex: none !important; min-height: 280px !important; }
+  .q-lobby-roster { flex: 1 !important; }
+
+  /* Session live: stack left rail above student grid */
+  .q-live-split { flex-direction: column !important; overflow: auto !important; }
+  .q-live-rail { width: 100% !important; border-right: none !important; border-bottom: 1px solid var(--q-line-2) !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 8px !important; padding: 12px !important; }
+
+  /* Session report: 2-col stats, scrollable table */
+  .q-report-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .q-report-table-wrap { overflow-x: auto !important; }
+  .q-report-table-inner { min-width: 480px; }
+}

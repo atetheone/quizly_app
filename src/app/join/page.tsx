@@ -44,7 +44,7 @@ export default function JoinPage() {
 
         <div>
           <span className="q-eyebrow">Step 1 of 2</span>
-          <h1 style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 40, letterSpacing: "-0.025em", lineHeight: 1.05, margin: "8px 0 0" }}>
+          <h1 style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "clamp(26px, 8vw, 40px)", letterSpacing: "-0.025em", lineHeight: 1.05, margin: "8px 0 0" }}>
             What&apos;s the<br />code?
           </h1>
           <p style={{ fontSize: 15, color: "var(--q-ink-2)", margin: "8px 0 0", lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>
@@ -60,7 +60,7 @@ export default function JoinPage() {
             placeholder="A3F7K2"
             maxLength={6}
             required
-            style={{ fontFamily: "var(--q-mono)", fontSize: 32, letterSpacing: "0.2em", textAlign: "center", textTransform: "uppercase", padding: "16px 14px" }}
+            style={{ fontFamily: "var(--q-mono)", fontSize: "clamp(20px, 7vw, 32px)", letterSpacing: "0.15em", textAlign: "center", textTransform: "uppercase", padding: "16px 14px" }}
           />
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

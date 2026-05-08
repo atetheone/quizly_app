@@ -49,7 +49,7 @@ export default function JoinWithCodePage() {
           <span className="q-eyebrow">Join quiz</span>
           <div
             style={{
-              fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 64,
+              fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "clamp(36px, 12vw, 64px)",
               letterSpacing: "0.06em", lineHeight: 1, marginTop: 8,
             }}
           >

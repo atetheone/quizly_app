@@ -174,9 +174,9 @@ export default function PlayPage() {
     return (
       <div style={{ minHeight: "100vh", background: "var(--q-yellow)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, textAlign: "center", padding: 20 }}>
         <span className="q-eyebrow">Get ready</span>
-        <div style={{ position: "relative", width: 240, height: 240, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ position: "relative", width: "min(240px, 65vw)", height: "min(240px, 65vw)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", inset: 0, opacity: 0.3 }} className="q-spike" />
-          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 200, lineHeight: 1, color: "var(--q-ink)", position: "relative" }}>
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "min(200px, 54vw)", lineHeight: 1, color: "var(--q-ink)", position: "relative" }}>
             {countdown > 0 ? countdown : "!"}
           </div>
         </div>
@@ -344,7 +344,7 @@ export default function PlayPage() {
         <div style={{ background: "var(--q-yellow)", padding: "28px 24px 20px", position: "relative", overflow: "hidden", textAlign: "center", borderBottom: "1.5px solid var(--q-line)" }}>
           <div style={{ position: "absolute", top: -60, left: -60, width: 200, height: 200, opacity: 0.25 }} className="q-spike" />
           <span className="q-eyebrow" style={{ position: "relative" }}>Your score</span>
-          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 80, lineHeight: 1, position: "relative" }}>
+          <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "clamp(52px, 16vw, 80px)", lineHeight: 1, position: "relative" }}>
             {results.score}<span style={{ fontSize: 36, color: "var(--q-ink-3)" }}>/{results.total}</span>
           </div>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 20, position: "relative" }}>

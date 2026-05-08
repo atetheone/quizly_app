@@ -124,6 +124,7 @@ export default function DashboardPage() {
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "var(--q-bg)" }}>
       {/* Sidebar */}
       <aside
+        className="q-sidebar"
         style={{
           width: 220, borderRight: "1px solid var(--q-line-2)",
           background: "var(--q-bg-2)", display: "flex", flexDirection: "column",
