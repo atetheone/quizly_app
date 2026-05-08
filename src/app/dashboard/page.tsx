@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { toast } from "sonner";
 import { QLogo, QAvatar } from "@/components/q-ui";
 
 type QuizListItem = {
@@ -37,6 +38,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const [quizzes, setQuizzes] = useState<QuizListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState<string | null>(null);
+  const [duplicating, setDuplicating] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/auth/login");
@@ -55,11 +58,18 @@ export default function DashboardPage() {
       : "Delete this quiz?";
     if (!confirm(warning)) return;
     const res = await fetch(`/api/quizzes/${quiz.id}`, { method: "DELETE" });
-    if (res.ok) setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+    if (res.ok) {
+      setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+    } else {
+      const d = await res.json().catch(() => ({}));
+      toast.error(d.error || "Failed to delete quiz");
+    }
   }
 
   async function handleDuplicate(id: string) {
+    setDuplicating(id);
     const res = await fetch(`/api/quizzes/${id}/duplicate`, { method: "POST" });
+    setDuplicating(null);
     if (res.ok) {
       const copy = await res.json();
       setQuizzes((prev) => [
@@ -74,10 +84,15 @@ export default function DashboardPage() {
         },
         ...prev,
       ]);
+      toast.success("Quiz duplicated");
+    } else {
+      const d = await res.json().catch(() => ({}));
+      toast.error(d.error || "Failed to duplicate quiz");
     }
   }
 
   async function handleStartSession(quizId: string) {
+    setStarting(quizId);
     const res = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -86,6 +101,10 @@ export default function DashboardPage() {
     if (res.ok) {
       const s = await res.json();
       router.push(`/session/${s.code}`);
+    } else {
+      setStarting(null);
+      const d = await res.json().catch(() => ({}));
+      toast.error(d.error || "Failed to start session");
     }
   }
 
@@ -218,18 +237,31 @@ export default function DashboardPage() {
                     Updated {new Date(quiz.updatedAt).toLocaleDateString()}
                   </div>
                   <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                    <button className="q-btn q-btn-primary q-btn-sm" style={{ flex: 1 }} onClick={() => handleStartSession(quiz.id)}>
-                      ▶ Start session
+                    <button
+                      className="q-btn q-btn-primary q-btn-sm"
+                      style={{ flex: 1 }}
+                      onClick={() => handleStartSession(quiz.id)}
+                      disabled={starting === quiz.id}
+                    >
+                      {starting === quiz.id ? "Starting…" : "▶ Start session"}
                     </button>
                     {quiz.isLocked ? (
-                      <button className="q-btn q-btn-sm" onClick={() => handleDuplicate(quiz.id)}>
-                        ⧉ Duplicate
+                      <button
+                        className="q-btn q-btn-sm"
+                        onClick={() => handleDuplicate(quiz.id)}
+                        disabled={duplicating === quiz.id}
+                      >
+                        {duplicating === quiz.id ? "…" : "⧉ Duplicate"}
                       </button>
                     ) : (
                       <>
                         <Link href={`/quiz/${quiz.id}/edit`} className="q-btn q-btn-sm">Edit</Link>
-                        <button className="q-btn q-btn-sm" onClick={() => handleDuplicate(quiz.id)}>
-                          ⧉
+                        <button
+                          className="q-btn q-btn-sm"
+                          onClick={() => handleDuplicate(quiz.id)}
+                          disabled={duplicating === quiz.id}
+                        >
+                          {duplicating === quiz.id ? "…" : "⧉"}
                         </button>
                       </>
                     )}

@@ -107,8 +107,8 @@
 ### Phase 7: Polish & Deployment
 - [x] Docker Compose for PostgreSQL (postgres:16-alpine)
 - [x] Environment variable setup for dev (.env)
-- [ ] Error handling and validation on all forms
-- [ ] Loading states and error feedback
+- [x] Error handling and validation on all forms
+- [x] Loading states and error feedback
 - [ ] Mobile responsiveness audit
 - [ ] Accessibility check (WCAG 2.1 AA for student pages)
 - [ ] Vercel deployment configuration

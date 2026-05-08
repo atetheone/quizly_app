@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Pusher from "pusher-js";
 import { isPusherConfigured } from "@/lib/use-pusher";
 import { QLogo, QAvatar } from "@/components/q-ui";
+import { toast } from "sonner";
 
 type AnswerOption = { id: string; text: string };
 type Question = { id: string; text: string; type: "SINGLE" | "MULTIPLE"; order: number; answerOptions: AnswerOption[] };
@@ -104,11 +105,14 @@ export default function PlayPage() {
     setSubmitted(true);
     setPhase("waiting");
     const payload = Object.entries(answers).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
-    await fetch(`/api/sessions/${code}/submit`, {
+    const res = await fetch(`/api/sessions/${code}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ studentId, answers: payload }),
     });
+    if (!res.ok) {
+      toast.error("Failed to submit answers. Your progress has been saved locally.");
+    }
   }, [answers, code, studentId, submitted]);
 
   async function fetchResults() {

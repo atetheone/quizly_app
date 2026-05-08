@@ -8,6 +8,7 @@ import QRCode from "qrcode";
 import Pusher from "pusher-js";
 import { isPusherConfigured } from "@/lib/use-pusher";
 import { QAvatar, QLogo } from "@/components/q-ui";
+import { toast } from "sonner";
 
 type Student = {
   id: string;
@@ -34,6 +35,8 @@ export default function SessionPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [starting, setStarting] = useState(false);
+  const [ending, setEnding] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/auth/login");
@@ -87,18 +90,30 @@ export default function SessionPage() {
     }, 1000);
   }
   async function handleStart() {
+    setStarting(true);
     const r = await fetch(`/api/sessions/${code}/start`, { method: "POST" });
+    setStarting(false);
     if (r.ok) {
       const d = await r.json();
       setInfo((prev) => prev ? { ...prev, status: "ACTIVE" } : prev);
       startTimer(new Date(d.startedAt).getTime() + (info?.timeLimit ?? 15) * 60000);
       fetchStudents();
+    } else {
+      const d = await r.json().catch(() => ({}));
+      toast.error(d.error || "Failed to start quiz");
     }
   }
   async function handleEnd() {
-    await fetch(`/api/sessions/${code}/end`, { method: "POST" });
-    setInfo((prev) => prev ? { ...prev, status: "ENDED" } : prev);
-    setTimeLeft(null);
+    setEnding(true);
+    const r = await fetch(`/api/sessions/${code}/end`, { method: "POST" });
+    setEnding(false);
+    if (r.ok) {
+      setInfo((prev) => prev ? { ...prev, status: "ENDED" } : prev);
+      setTimeLeft(null);
+    } else {
+      const d = await r.json().catch(() => ({}));
+      toast.error(d.error || "Failed to end session");
+    }
   }
 
   if (!info) {
@@ -109,12 +124,12 @@ export default function SessionPage() {
     );
   }
 
-  if (info.status === "LOBBY") return <LobbyView info={info} students={students} qrCodeUrl={qrCodeUrl} code={code} onStart={handleStart} />;
-  if (info.status === "ACTIVE") return <LiveView info={info} students={students} timeLeft={timeLeft} code={code} onEnd={handleEnd} />;
+  if (info.status === "LOBBY") return <LobbyView info={info} students={students} qrCodeUrl={qrCodeUrl} code={code} onStart={handleStart} starting={starting} />;
+  if (info.status === "ACTIVE") return <LiveView info={info} students={students} timeLeft={timeLeft} code={code} onEnd={handleEnd} ending={ending} />;
   return <ReportView code={code} onBack={() => router.push("/dashboard")} />;
 }
 
-function LobbyView({ info, students, qrCodeUrl, code, onStart }: { info: SessionInfo; students: Student[]; qrCodeUrl: string; code: string; onStart: () => void }) {
+function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { info: SessionInfo; students: Student[]; qrCodeUrl: string; code: string; onStart: () => void; starting: boolean }) {
   const joinUrl = typeof window !== "undefined" ? `${window.location.origin}/join/${code}` : `/join/${code}`;
   return (
     <div style={{ display: "flex", height: "100vh", background: "var(--q-bg)" }}>
@@ -174,8 +189,8 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart }: { info: Session
               {students.length} students
             </div>
           </div>
-          <button className="q-btn q-btn-coral q-btn-lg" onClick={onStart} disabled={students.length === 0}>
-            ▶ Start quiz
+          <button className="q-btn q-btn-coral q-btn-lg" onClick={onStart} disabled={students.length === 0 || starting}>
+            {starting ? "Starting…" : "▶ Start quiz"}
           </button>
         </div>
 
@@ -208,7 +223,7 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart }: { info: Session
   );
 }
 
-function LiveView({ info, students, timeLeft, code, onEnd }: { info: SessionInfo; students: Student[]; timeLeft: number | null; code: string; onEnd: () => void }) {
+function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: SessionInfo; students: Student[]; timeLeft: number | null; code: string; onEnd: () => void; ending: boolean }) {
   const total = info.timeLimit * 60;
   const answered = students.reduce((s, st) => s + st.questionsAnswered, 0);
   const maxAnswers = students.length * (students[0]?.totalQuestions || 1);
@@ -246,7 +261,9 @@ function LiveView({ info, students, timeLeft, code, onEnd }: { info: SessionInfo
               </div>
             </div>
           )}
-          <button className="q-btn q-btn-coral q-btn-sm" onClick={onEnd}>End now</button>
+          <button className="q-btn q-btn-coral q-btn-sm" onClick={onEnd} disabled={ending}>
+            {ending ? "Ending…" : "End now"}
+          </button>
         </div>
       </div>
 
