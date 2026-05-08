@@ -112,6 +112,7 @@ export default function PlayPage() {
               return { ...prev, [qId]: cur.includes(optId) ? cur.filter((id) => id !== optId) : [...cur, optId] };
             })();
       answersRef.current = next;
+      sessionStorage.setItem(`quizly_answers_${code}`, JSON.stringify(next));
       return next;
     });
   }
@@ -121,13 +122,17 @@ export default function PlayPage() {
     submittedRef.current = true;
     setSubmitted(true);
     setPhase("waiting");
-    const payload = Object.entries(answersRef.current).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
+    const stored = sessionStorage.getItem(`quizly_answers_${code}`);
+    const finalAnswers: Record<string, string[]> = stored ? JSON.parse(stored) : answersRef.current;
+    const payload = Object.entries(finalAnswers).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
     const res = await fetch(`/api/sessions/${code}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ studentId, answers: payload }),
     });
-    if (!res.ok) {
+    if (res.ok) {
+      sessionStorage.removeItem(`quizly_answers_${code}`);
+    } else {
       toast.error("Failed to submit answers. Your progress has been saved locally.");
     }
   }, [code, studentId]);
