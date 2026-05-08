@@ -111,7 +111,7 @@
 - [x] Loading states and error feedback
 - [x] Mobile responsiveness audit
 - [x] Accessibility check (WCAG 2.1 AA for student pages)
-- [ ] Vercel deployment configuration
+- [x] Vercel deployment configuration
 - [ ] Pusher production configuration
 - [ ] Google OAuth production credentials
 - [ ] End-to-end testing of full quiz flow
