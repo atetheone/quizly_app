@@ -37,11 +37,13 @@ export default function PlayPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
   const answersRef = useRef<Record<string, string[]>>({});
+  const studentIdRef = useRef("");
 
   useEffect(() => {
     const sid = sessionStorage.getItem("studentId");
     const sname = sessionStorage.getItem("studentName");
     if (!sid || !sname) { window.location.href = `/join/${code}`; return; }
+    studentIdRef.current = sid;
     setStudentId(sid);
     setStudentName(sname);
     fetch(`/api/sessions/${code}`).then((r) => r.json()).then((data) => {
@@ -128,20 +130,25 @@ export default function PlayPage() {
     const res = await fetch(`/api/sessions/${code}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentId, answers: payload }),
+      body: JSON.stringify({ studentId: studentIdRef.current, answers: payload }),
     });
     if (res.ok) {
       sessionStorage.removeItem(`quizly_answers_${code}`);
     } else {
       toast.error("Failed to submit answers. Your progress has been saved locally.");
     }
-  }, [code, studentId]);
+  }, [code]);
 
   async function fetchResults() {
-    const res = await fetch(`/api/sessions/${code}/student-results?studentId=${studentId}`);
-    if (res.ok) {
-      setResults(await res.json());
-      setPhase("results");
+    const sid = studentIdRef.current;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      if (attempt > 0) await new Promise((r) => setTimeout(r, 1500));
+      const res = await fetch(`/api/sessions/${code}/student-results?studentId=${sid}`);
+      if (res.ok) {
+        setResults(await res.json());
+        setPhase("results");
+        return;
+      }
     }
   }
 
