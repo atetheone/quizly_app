@@ -54,6 +54,39 @@ export default function PlayPage() {
     });
   }, [code]);
 
+  const handleSubmit = useCallback(async () => {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+    setSubmitted(true);
+    setPhase("waiting");
+    const stored = sessionStorage.getItem(`quizly_answers_${code}`);
+    const finalAnswers: Record<string, string[]> = stored ? JSON.parse(stored) : answersRef.current;
+    const payload = Object.entries(finalAnswers).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
+    fetch(`/api/sessions/${code}/progress`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId: studentIdRef.current, questionsAnswered: Object.keys(finalAnswers).length, totalQuestions: questionsRef.current.length }),
+    }).catch(() => {});
+    const res = await fetch(`/api/sessions/${code}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId: studentIdRef.current, answers: payload }),
+    });
+    if (res.ok) {
+      sessionStorage.removeItem(`quizly_answers_${code}`);
+    } else {
+      toast.error("Failed to submit answers. Your progress has been saved locally.");
+    }
+  }, [code]);
+
+  const fetchResults = useCallback(async () => {
+    const res = await fetch(`/api/sessions/${code}/student-results?studentId=${studentIdRef.current}`);
+    if (res.ok) {
+      setResults(await res.json());
+      setPhase("results");
+    }
+  }, [code]);
+
   useEffect(() => {
     if (!isPusherConfigured) return;
     const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, { cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER! });
@@ -78,7 +111,15 @@ export default function PlayPage() {
       }
     });
     return () => { pusher.unsubscribe(`room-${code}`); pusher.disconnect(); };
-  }, [code, fetchResults]);
+  }, [code, fetchResults, handleSubmit]);
+
+  // Poll for results while waiting — fallback for when quiz-ended Pusher event is missed
+  useEffect(() => {
+    if (phase !== "waiting") return;
+    fetchResults();
+    const iv = setInterval(fetchResults, 3000);
+    return () => clearInterval(iv);
+  }, [phase, fetchResults]);
 
   async function fetchQuiz() {
     const res = await fetch(`/api/sessions/${code}/quiz`);
@@ -125,47 +166,6 @@ export default function PlayPage() {
       body: JSON.stringify({ studentId: studentIdRef.current, questionsAnswered: answered, totalQuestions: questionsRef.current.length }),
     }).catch(() => {});
   }
-
-  const handleSubmit = useCallback(async () => {
-    if (submittedRef.current) return;
-    submittedRef.current = true;
-    setSubmitted(true);
-    setPhase("waiting");
-    const stored = sessionStorage.getItem(`quizly_answers_${code}`);
-    const finalAnswers: Record<string, string[]> = stored ? JSON.parse(stored) : answersRef.current;
-    const payload = Object.entries(finalAnswers).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
-    fetch(`/api/sessions/${code}/progress`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentId: studentIdRef.current, questionsAnswered: Object.keys(finalAnswers).length, totalQuestions: questionsRef.current.length }),
-    }).catch(() => {});
-    const res = await fetch(`/api/sessions/${code}/submit`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentId: studentIdRef.current, answers: payload }),
-    });
-    if (res.ok) {
-      sessionStorage.removeItem(`quizly_answers_${code}`);
-    } else {
-      toast.error("Failed to submit answers. Your progress has been saved locally.");
-    }
-  }, [code]);
-
-  const fetchResults = useCallback(async () => {
-    const res = await fetch(`/api/sessions/${code}/student-results?studentId=${studentIdRef.current}`);
-    if (res.ok) {
-      setResults(await res.json());
-      setPhase("results");
-    }
-  }, [code]);
-
-  // Poll for results while waiting — fallback for when quiz-ended Pusher event is missed
-  useEffect(() => {
-    if (phase !== "waiting") return;
-    fetchResults();
-    const iv = setInterval(fetchResults, 3000);
-    return () => clearInterval(iv);
-  }, [phase, fetchResults]);
 
   // ─── Lobby ───
   if (phase === "lobby") {
