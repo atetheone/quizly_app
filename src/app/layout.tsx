@@ -20,7 +20,7 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "Quizly — Live Quiz Platform",
+  title: "Quizly - Live Quiz Platform",
   description: "Create quizzes, launch rooms, and grade students in real-time",
 };
 
