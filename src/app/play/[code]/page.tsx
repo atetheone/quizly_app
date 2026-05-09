@@ -38,6 +38,7 @@ export default function PlayPage() {
   const submittedRef = useRef(false);
   const answersRef = useRef<Record<string, string[]>>({});
   const studentIdRef = useRef("");
+  const questionsRef = useRef<Question[]>([]);
 
   useEffect(() => {
     const sid = sessionStorage.getItem("studentId");
@@ -83,6 +84,7 @@ export default function PlayPage() {
     const res = await fetch(`/api/sessions/${code}/quiz`);
     if (res.ok) {
       const data = await res.json();
+      questionsRef.current = data.questions;
       setQuestions(data.questions);
       const endTime = new Date(data.startedAt).getTime() + data.timeLimit * 60 * 1000;
       setTimeLeft(Math.max(0, Math.floor((endTime - Date.now()) / 1000)));
@@ -105,18 +107,23 @@ export default function PlayPage() {
   }
 
   function handleAnswer(qId: string, optId: string, type: "SINGLE" | "MULTIPLE") {
-    setAnswers((prev) => {
-      const next =
-        type === "SINGLE"
-          ? { ...prev, [qId]: [optId] }
-          : (() => {
-              const cur = prev[qId] || [];
-              return { ...prev, [qId]: cur.includes(optId) ? cur.filter((id) => id !== optId) : [...cur, optId] };
-            })();
-      answersRef.current = next;
-      sessionStorage.setItem(`quizly_answers_${code}`, JSON.stringify(next));
-      return next;
-    });
+    const prev = answersRef.current;
+    const next =
+      type === "SINGLE"
+        ? { ...prev, [qId]: [optId] }
+        : (() => {
+            const cur = prev[qId] || [];
+            return { ...prev, [qId]: cur.includes(optId) ? cur.filter((id) => id !== optId) : [...cur, optId] };
+          })();
+    answersRef.current = next;
+    sessionStorage.setItem(`quizly_answers_${code}`, JSON.stringify(next));
+    setAnswers(next);
+    const answered = Object.keys(next).length;
+    fetch(`/api/sessions/${code}/progress`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId: studentIdRef.current, questionsAnswered: answered, totalQuestions: questionsRef.current.length }),
+    }).catch(() => {});
   }
 
   const handleSubmit = useCallback(async () => {
@@ -127,6 +134,11 @@ export default function PlayPage() {
     const stored = sessionStorage.getItem(`quizly_answers_${code}`);
     const finalAnswers: Record<string, string[]> = stored ? JSON.parse(stored) : answersRef.current;
     const payload = Object.entries(finalAnswers).flatMap(([qId, optIds]) => optIds.map((answerOptionId) => ({ questionId: qId, answerOptionId })));
+    fetch(`/api/sessions/${code}/progress`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId: studentIdRef.current, questionsAnswered: Object.keys(finalAnswers).length, totalQuestions: questionsRef.current.length }),
+    }).catch(() => {});
     const res = await fetch(`/api/sessions/${code}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
