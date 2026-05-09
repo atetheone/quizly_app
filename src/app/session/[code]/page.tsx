@@ -86,7 +86,11 @@ export default function SessionPage() {
     const iv = setInterval(() => {
       const rem = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
       setTimeLeft(rem);
-      if (rem <= 0) { clearInterval(iv); setInfo((prev) => prev ? { ...prev, status: "ENDED" } : prev); fetchStudents(); }
+      if (rem <= 0) {
+        clearInterval(iv);
+        // End the session server-side so students are notified and can fetch results
+        fetch(`/api/sessions/${code}/end`, { method: "POST" }).catch(() => {});
+      }
     }, 1000);
   }
   async function handleStart() {

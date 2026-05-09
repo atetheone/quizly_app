@@ -36,6 +36,7 @@ export default function PlayPage() {
   const [submitted, setSubmitted] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
+  const submitPromiseRef = useRef<Promise<void>>(Promise.resolve());
   const answersRef = useRef<Record<string, string[]>>({});
   const studentIdRef = useRef("");
   const questionsRef = useRef<Question[]>([]);
@@ -101,12 +102,11 @@ export default function PlayPage() {
       }, 1000);
     });
     channel.bind("quiz-ended", async () => {
-      if (submittedRef.current) {
-        await fetchResults();
-      } else {
-        await handleSubmit();
-        await fetchResults();
+      if (!submittedRef.current) {
+        submitPromiseRef.current = handleSubmit();
       }
+      await submitPromiseRef.current;
+      await fetchResults();
     });
     return () => { pusher.unsubscribe(`room-${code}`); pusher.disconnect(); };
   }, [code, fetchResults, handleSubmit]);
@@ -137,13 +137,18 @@ export default function PlayPage() {
         if (prev === null) return null;
         if (prev <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
-          if (!submittedRef.current) handleSubmit();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
   }
+
+  useEffect(() => {
+    if (timeLeft === 0 && phase === "active" && !submittedRef.current) {
+      submitPromiseRef.current = handleSubmit();
+    }
+  }, [timeLeft, phase, handleSubmit]);
 
   function handleAnswer(qId: string, optId: string, type: "SINGLE" | "MULTIPLE") {
     const prev = answersRef.current;
@@ -366,12 +371,12 @@ export default function PlayPage() {
               Next →
             </button>
           ) : (
-            <button className="q-btn q-btn-primary" style={{ flex: 1 }} onClick={() => handleSubmit()} disabled={submitted}>
+            <button className="q-btn q-btn-primary" style={{ flex: 1 }} onClick={() => { submitPromiseRef.current = handleSubmit(); }} disabled={submitted}>
               {answeredCount < questions.length ? `Submit (${answeredCount}/${questions.length} answered)` : "Submit quiz ✓"}
             </button>
           )}
           {currentQ < questions.length - 1 && (
-            <button className="q-btn q-btn-coral q-btn-sm" onClick={() => handleSubmit()} disabled={submitted}>
+            <button className="q-btn q-btn-coral q-btn-sm" onClick={() => { submitPromiseRef.current = handleSubmit(); }} disabled={submitted}>
               Submit
             </button>
           )}
