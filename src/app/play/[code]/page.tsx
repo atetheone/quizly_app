@@ -30,6 +30,8 @@ export default function PlayPage() {
   const [countdown, setCountdown] = useState(3);
   const [results, setResults] = useState<{
     score: number; total: number; percentage: number;
+    rank: number; totalParticipants: number;
+    top3: { name: string; score: number; total: number; percentage: number }[];
     questions: { id: string; text: string; type: string; isCorrect: boolean; answerOptions: { id: string; text: string; isCorrect: boolean; isSelected: boolean }[] }[];
   } | null>(null);
   const [lobbyStudents, setLobbyStudents] = useState<string[]>([]);
@@ -422,8 +424,46 @@ export default function PlayPage() {
             <span className="q-chip" style={{ background: "var(--q-bg)", fontSize: 11 }}>
               {results.score}/{results.total} correct
             </span>
+            <span className="q-chip" style={{ background: "var(--q-bg)", fontSize: 11 }}>
+              #{results.rank} of {results.totalParticipants}
+            </span>
           </div>
         </div>
+
+        {/* leaderboard */}
+        {results.top3.length > 0 && (
+          <div style={{ padding: "16px 20px 0" }}>
+            <span className="q-eyebrow" style={{ display: "block", marginBottom: 8 }}>Leaderboard</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {results.top3.map((s, i) => {
+                const isMe = s.name === studentName && i + 1 === results.rank;
+                const medals = ["🥇", "🥈", "🥉"];
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+                      background: isMe ? "var(--q-ink)" : "var(--q-bg-2)",
+                      color: isMe ? "var(--q-bg)" : "var(--q-ink)",
+                      borderRadius: 10, border: "1.5px solid " + (isMe ? "var(--q-ink)" : "var(--q-line-2)"),
+                    }}
+                  >
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>{medals[i]}</span>
+                    <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 15, flex: 1 }}>{s.name}{isMe ? " (you)" : ""}</span>
+                    <span style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{s.score}/{s.total}</span>
+                  </div>
+                );
+              })}
+              {results.rank > 3 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "var(--q-ink)", color: "var(--q-bg)", borderRadius: 10, border: "1.5px solid var(--q-ink)" }}>
+                  <span style={{ fontFamily: "var(--q-mono)", fontSize: 14, flexShrink: 0 }}>#{results.rank}</span>
+                  <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 15, flex: 1 }}>{studentName} (you)</span>
+                  <span style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{results.score}/{results.total}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* answer review */}
         <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", gap: 12, overflow: "auto" }}>

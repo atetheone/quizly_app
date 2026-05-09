@@ -70,10 +70,32 @@ export async function GET(
       };
     });
 
+    // Compute rank across all students in this session (dense ranking)
+    const allStudents = await prisma.student.findMany({
+      where: { sessionId: sessionRoom.id },
+      include: { answers: true },
+    });
+    const allAnswerOptions = quiz!.questions.flatMap((q) => q.answerOptions);
+    const allScores = allStudents
+      .map((s) => gradeQuiz(quiz!.questions, allAnswerOptions, s.answers).score)
+      .sort((a, b) => b - a);
+    const higherCount = allScores.filter((s) => s > grading.score).length;
+    const rank = higherCount + 1;
+    const top3 = allStudents
+      .map((s) => {
+        const g = gradeQuiz(quiz!.questions, allAnswerOptions, s.answers);
+        return { name: s.name, score: g.score, total: g.total, percentage: g.percentage };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+
     return NextResponse.json({
       score: grading.score,
       total: grading.total,
       percentage: grading.percentage,
+      rank,
+      totalParticipants: allStudents.length,
+      top3,
       questions: questionResults,
     });
   } catch {
