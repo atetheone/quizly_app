@@ -450,11 +450,17 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
         {tab === "students" && (
           <div className="q-card q-report-table-wrap" style={{ overflow: "hidden" }}>
             <div className="q-report-table-inner">
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
-              <div>Student</div><div>Score</div><div>Percent</div><div>Time</div>
+            <div style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 2fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
+              <div>#</div><div>Student</div><div>Score</div><div>Percent</div><div>Time</div>
             </div>
-            {sorted.map((s) => (
-              <div key={s.studentId} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr", padding: "12px 16px", borderBottom: "1px solid var(--q-line-2)", alignItems: "center", fontSize: 14 }}>
+            {sorted.map((s, i) => {
+              const rank = i === 0 ? 1 : sorted[i].percentage === sorted[i - 1].percentage ? sorted.findIndex(x => x.percentage === s.percentage) + 1 : i + 1;
+              const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+              return (
+              <div key={s.studentId} style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 2fr 1fr", padding: "12px 16px", borderBottom: "1px solid var(--q-line-2)", alignItems: "center", fontSize: 14 }}>
+                <div style={{ fontFamily: "var(--q-mono)", fontSize: 13, color: "var(--q-ink-3)" }}>
+                  {medals[rank] ?? rank}
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <QAvatar name={s.name} size={28} />
                   <b style={{ fontFamily: "var(--q-sans)" }}>{s.name}</b>
@@ -470,7 +476,8 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
                   {s.submittedAt ? new Date(s.submittedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
                 </div>
               </div>
-            ))}
+              );
+            })}
             </div>
           </div>
         )}
