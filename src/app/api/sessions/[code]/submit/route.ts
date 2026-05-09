@@ -22,8 +22,8 @@ export async function POST(
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
-    if (sessionRoom.status !== "ACTIVE") {
-      return NextResponse.json({ error: "Quiz not active" }, { status: 400 });
+    if (sessionRoom.status === "LOBBY") {
+      return NextResponse.json({ error: "Quiz has not started" }, { status: 400 });
     }
 
     const student = await prisma.student.findUnique({

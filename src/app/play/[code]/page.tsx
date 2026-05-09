@@ -74,8 +74,6 @@ export default function PlayPage() {
     });
     if (res.ok) {
       sessionStorage.removeItem(`quizly_answers_${code}`);
-    } else {
-      toast.error("Failed to submit answers. Your progress has been saved locally.");
     }
   }, [code]);
 
