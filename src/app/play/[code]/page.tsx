@@ -78,7 +78,7 @@ export default function PlayPage() {
       }
     });
     return () => { pusher.unsubscribe(`room-${code}`); pusher.disconnect(); };
-  }, [code, submitted]);
+  }, [code, fetchResults]);
 
   async function fetchQuiz() {
     const res = await fetch(`/api/sessions/${code}/quiz`);
@@ -151,18 +151,21 @@ export default function PlayPage() {
     }
   }, [code]);
 
-  async function fetchResults() {
-    const sid = studentIdRef.current;
-    for (let attempt = 0; attempt < 6; attempt++) {
-      if (attempt > 0) await new Promise((r) => setTimeout(r, 1500));
-      const res = await fetch(`/api/sessions/${code}/student-results?studentId=${sid}`);
-      if (res.ok) {
-        setResults(await res.json());
-        setPhase("results");
-        return;
-      }
+  const fetchResults = useCallback(async () => {
+    const res = await fetch(`/api/sessions/${code}/student-results?studentId=${studentIdRef.current}`);
+    if (res.ok) {
+      setResults(await res.json());
+      setPhase("results");
     }
-  }
+  }, [code]);
+
+  // Poll for results while waiting — fallback for when quiz-ended Pusher event is missed
+  useEffect(() => {
+    if (phase !== "waiting") return;
+    fetchResults();
+    const iv = setInterval(fetchResults, 3000);
+    return () => clearInterval(iv);
+  }, [phase, fetchResults]);
 
   // ─── Lobby ───
   if (phase === "lobby") {
