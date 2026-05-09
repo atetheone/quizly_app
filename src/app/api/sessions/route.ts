@@ -2,6 +2,47 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateRoomCode } from "@/lib/utils-quiz";
+import { gradeQuiz } from "@/lib/grading";
+
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const sessionRooms = await prisma.sessionRoom.findMany({
+      where: { teacherId: session.user.id, status: "ENDED" },
+      orderBy: { endedAt: "desc" },
+      include: {
+        quiz: { select: { title: true, questions: { include: { answerOptions: true } } } },
+        students: { include: { answers: true } },
+      },
+    });
+
+    const history = sessionRooms.map((room) => {
+      const allAnswerOptions = room.quiz.questions.flatMap((q) => q.answerOptions);
+      const scores = room.students.map(
+        (s) => gradeQuiz(room.quiz.questions, allAnswerOptions, s.answers).percentage
+      );
+      const average =
+        scores.length > 0
+          ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+          : 0;
+      return {
+        code: room.code,
+        quizTitle: room.quiz.title,
+        endedAt: room.endedAt,
+        studentCount: room.students.length,
+        average,
+      };
+    });
+
+    return NextResponse.json(history);
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   try {
