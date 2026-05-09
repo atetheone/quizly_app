@@ -352,9 +352,23 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
   );
 }
 
+type BreakdownQuestion = {
+  id: string; text: string; type: string; order: number; correctRate: number;
+  options: { id: string; text: string; isCorrect: boolean; selectionCount: number; selectionPct: number }[];
+};
+type Breakdown = { totalStudents: number; questions: BreakdownQuestion[] };
+
 function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
   const [results, setResults] = useState<Results | null>(null);
+  const [breakdown, setBreakdown] = useState<Breakdown | null>(null);
+  const [tab, setTab] = useState<"students" | "questions">("students");
+
   useEffect(() => { fetch(`/api/sessions/${code}/results`).then((r) => r.json()).then(setResults); }, [code]);
+  useEffect(() => {
+    if (tab === "questions" && !breakdown) {
+      fetch(`/api/sessions/${code}/breakdown`).then((r) => r.json()).then(setBreakdown);
+    }
+  }, [tab, breakdown, code]);
 
   if (!results) {
     return (
@@ -413,39 +427,102 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
           </div>
         </div>
 
-        {/* results table */}
-        <div className="q-card q-report-table-wrap" style={{ overflow: "hidden" }}>
-          <div className="q-report-table-inner">
-          <div style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 2fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
-            <div>#</div><div>Student</div><div>Score</div><div>Percent</div><div>Time</div>
-          </div>
-          {sorted.map((s, i) => {
-            const rank = i === 0 ? 1 : sorted[i].percentage === sorted[i - 1].percentage ? sorted.findIndex(x => x.percentage === s.percentage) + 1 : i + 1;
-            const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
-            return (
-            <div key={s.studentId} style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 2fr 1fr", padding: "12px 16px", borderBottom: "1px solid var(--q-line-2)", alignItems: "center", fontSize: 14 }}>
-              <div style={{ fontFamily: "var(--q-mono)", fontSize: 13, color: "var(--q-ink-3)" }}>
-                {medals[rank] ?? rank}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <QAvatar name={s.name} size={28} />
-                <b style={{ fontFamily: "var(--q-sans)" }}>{s.name}</b>
-              </div>
-              <div style={{ fontFamily: "var(--q-mono)" }}>{s.score}/{s.total}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div className="q-bar q-bar-thin" style={{ width: 80 }}>
-                  <span className="q-bar-fill" style={{ width: `${s.percentage}%`, background: s.percentage >= 75 ? "var(--q-green)" : s.percentage >= 50 ? "var(--q-yellow)" : "var(--q-coral)" }} />
-                </div>
-                <span style={{ fontFamily: "var(--q-mono)", fontSize: 12 }}>{s.percentage}%</span>
-              </div>
-              <div style={{ fontFamily: "var(--q-mono)", color: "var(--q-ink-3)", fontSize: 12 }}>
-                {s.submittedAt ? new Date(s.submittedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
-              </div>
-            </div>
-            );
-          })}
-          </div>
+        {/* tab switcher */}
+        <div style={{ display: "flex", gap: 4, borderBottom: "1.5px solid var(--q-line-2)", paddingBottom: 0 }}>
+          {(["students", "questions"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              style={{
+                padding: "8px 16px", fontFamily: "var(--q-sans)", fontWeight: 600, fontSize: 14,
+                background: "none", border: "none", cursor: "pointer",
+                borderBottom: tab === t ? "2.5px solid var(--q-ink)" : "2.5px solid transparent",
+                color: tab === t ? "var(--q-ink)" : "var(--q-ink-3)",
+                marginBottom: -1.5,
+              }}
+            >
+              {t === "students" ? "Students" : "Questions"}
+            </button>
+          ))}
         </div>
+
+        {/* students tab */}
+        {tab === "students" && (
+          <div className="q-card q-report-table-wrap" style={{ overflow: "hidden" }}>
+            <div className="q-report-table-inner">
+            <div style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 2fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
+              <div>#</div><div>Student</div><div>Score</div><div>Percent</div><div>Time</div>
+            </div>
+            {sorted.map((s, i) => {
+              const rank = i === 0 ? 1 : sorted[i].percentage === sorted[i - 1].percentage ? sorted.findIndex(x => x.percentage === s.percentage) + 1 : i + 1;
+              const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+              return (
+              <div key={s.studentId} style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 2fr 1fr", padding: "12px 16px", borderBottom: "1px solid var(--q-line-2)", alignItems: "center", fontSize: 14 }}>
+                <div style={{ fontFamily: "var(--q-mono)", fontSize: 13, color: "var(--q-ink-3)" }}>
+                  {medals[rank] ?? rank}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <QAvatar name={s.name} size={28} />
+                  <b style={{ fontFamily: "var(--q-sans)" }}>{s.name}</b>
+                </div>
+                <div style={{ fontFamily: "var(--q-mono)" }}>{s.score}/{s.total}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div className="q-bar q-bar-thin" style={{ width: 80 }}>
+                    <span className="q-bar-fill" style={{ width: `${s.percentage}%`, background: s.percentage >= 75 ? "var(--q-green)" : s.percentage >= 50 ? "var(--q-yellow)" : "var(--q-coral)" }} />
+                  </div>
+                  <span style={{ fontFamily: "var(--q-mono)", fontSize: 12 }}>{s.percentage}%</span>
+                </div>
+                <div style={{ fontFamily: "var(--q-mono)", color: "var(--q-ink-3)", fontSize: 12 }}>
+                  {s.submittedAt ? new Date(s.submittedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
+                </div>
+              </div>
+              );
+            })}
+            </div>
+          </div>
+        )}
+
+        {/* questions tab */}
+        {tab === "questions" && (
+          !breakdown ? (
+            <div style={{ textAlign: "center", padding: 40, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>Loading breakdown…</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {breakdown.questions.map((q, qi) => (
+                <div key={q.id} className="q-card" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, color: "var(--q-ink-3)" }}>Q{qi + 1}</span>
+                    <div style={{ flex: 1, fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 16 }}>{q.text}</div>
+                    <span
+                      className="q-chip"
+                      style={{
+                        background: q.correctRate >= 75 ? "var(--q-green-soft)" : q.correctRate >= 50 ? "var(--q-yellow-soft)" : "var(--q-coral-soft)",
+                        borderColor: q.correctRate >= 75 ? "var(--q-green)" : q.correctRate >= 50 ? "var(--q-yellow)" : "var(--q-coral)",
+                        fontSize: 11, fontFamily: "var(--q-mono)", flexShrink: 0,
+                      }}
+                    >
+                      {q.correctRate}% correct
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {q.options.map((opt) => (
+                      <div key={opt.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0, background: opt.isCorrect ? "var(--q-green)" : "var(--q-line-2)", border: "1.5px solid " + (opt.isCorrect ? "var(--q-green)" : "var(--q-line)") }} />
+                        <span style={{ fontSize: 13, fontFamily: "var(--q-sans)", flex: 1 }}>{opt.text}</span>
+                        <div style={{ width: 120, display: "flex", alignItems: "center", gap: 6 }}>
+                          <div className="q-bar q-bar-thin" style={{ flex: 1 }}>
+                            <span className="q-bar-fill" style={{ width: `${opt.selectionPct}%`, background: opt.isCorrect ? "var(--q-green)" : "var(--q-coral-soft)" }} />
+                          </div>
+                          <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, color: "var(--q-ink-3)", width: 32, textAlign: "right" }}>{opt.selectionPct}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
       </div>
     </div>
   );
