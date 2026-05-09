@@ -17,6 +17,14 @@ type QuizListItem = {
   isLocked: boolean;
 };
 
+type PastSession = {
+  code: string;
+  quizTitle: string;
+  endedAt: string;
+  studentCount: number;
+  average: number;
+};
+
 const EMOJIS = ["🧬","📜","➗","🇪🇸","⚗️","📖","🌍","🔬","📐","🎭","🏛️","🌱","💡","🎵","🔭"];
 const COLORS = [
   "var(--q-yellow)", "var(--q-coral-soft)", "var(--q-green-soft)",
@@ -26,17 +34,18 @@ const COLORS = [
 function quizColor(id: string) { return COLORS[id.charCodeAt(0) % COLORS.length]; }
 function quizEmoji(title: string) { return EMOJIS[title.charCodeAt(0) % EMOJIS.length]; }
 
-const navItems = [
-  { i: "▦", t: "Quizzes", on: true },
-  { i: "↻", t: "Past sessions" },
-  { i: "★", t: "Templates" },
-  { i: "⚙", t: "Settings" },
+type NavTab = "quizzes" | "sessions";
+const navItems: { i: string; t: string; tab: NavTab }[] = [
+  { i: "▦", t: "Quizzes", tab: "quizzes" },
+  { i: "↻", t: "Past sessions", tab: "sessions" },
 ];
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [tab, setTab] = useState<NavTab>("quizzes");
   const [quizzes, setQuizzes] = useState<QuizListItem[]>([]);
+  const [pastSessions, setPastSessions] = useState<PastSession[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState<string | null>(null);
   const [duplicating, setDuplicating] = useState<string | null>(null);
@@ -51,6 +60,14 @@ export default function DashboardPage() {
       .then((r) => r.json())
       .then((data) => { setQuizzes(data); setLoading(false); });
   }, [status]);
+
+  useEffect(() => {
+    if (tab === "sessions" && pastSessions === null && status === "authenticated") {
+      fetch("/api/sessions")
+        .then((r) => r.json())
+        .then(setPastSessions);
+    }
+  }, [tab, pastSessions, status]);
 
   async function handleDelete(quiz: QuizListItem) {
     const warning = quiz.isLocked
@@ -133,20 +150,22 @@ export default function DashboardPage() {
       >
         <QLogo size={26} />
         <nav style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
-          {navItems.map((x, i) => (
-            <div
-              key={i}
+          {navItems.map((x) => (
+            <button
+              key={x.tab}
+              onClick={() => setTab(x.tab)}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "8px 12px", borderRadius: 8,
-                background: x.on ? "var(--q-ink)" : "transparent",
-                color: x.on ? "var(--q-bg)" : "var(--q-ink-2)",
-                fontWeight: x.on ? 600 : 500, fontSize: 14,
+                background: tab === x.tab ? "var(--q-ink)" : "transparent",
+                color: tab === x.tab ? "var(--q-bg)" : "var(--q-ink-2)",
+                fontWeight: tab === x.tab ? 600 : 500, fontSize: 14,
                 fontFamily: "var(--q-sans)", cursor: "pointer",
+                border: "none", textAlign: "left", width: "100%",
               }}
             >
               <span>{x.i}</span><span>{x.t}</span>
-            </div>
+            </button>
           ))}
         </nav>
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 8 }}>
@@ -181,6 +200,54 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {tab === "sessions" ? (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span className="q-eyebrow">Past sessions · {pastSessions?.length ?? "…"}</span>
+            </div>
+            {pastSessions === null ? (
+              <div style={{ textAlign: "center", padding: 40, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>Loading…</div>
+            ) : pastSessions.length === 0 ? (
+              <div className="q-card" style={{ padding: 48, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center" }}>
+                <div style={{ fontSize: 48 }}>📋</div>
+                <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 24 }}>No past sessions</div>
+                <div style={{ color: "var(--q-ink-3)", fontSize: 15, fontFamily: "var(--q-sans)" }}>Run a quiz to see your session history here.</div>
+              </div>
+            ) : (
+              <div className="q-card" style={{ overflow: "hidden" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
+                  <div>Quiz</div><div>Date</div><div>Students</div><div>Avg</div>
+                </div>
+                {pastSessions.map((s) => (
+                  <Link
+                    key={s.code}
+                    href={`/session/${s.code}`}
+                    style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "14px 16px", borderBottom: "1px solid var(--q-line-2)", alignItems: "center", textDecoration: "none", color: "inherit" }}
+                  >
+                    <div style={{ fontFamily: "var(--q-sans)", fontWeight: 600, fontSize: 14 }}>{s.quizTitle}</div>
+                    <div style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>
+                      {new Date(s.endedAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+                    </div>
+                    <div style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{s.studentCount}</div>
+                    <div>
+                      <span
+                        className="q-chip"
+                        style={{
+                          background: s.average >= 75 ? "var(--q-green-soft)" : s.average >= 50 ? "var(--q-yellow-soft)" : "var(--q-coral-soft)",
+                          borderColor: s.average >= 75 ? "var(--q-green)" : s.average >= 50 ? "var(--q-yellow)" : "var(--q-coral)",
+                          fontSize: 11, fontFamily: "var(--q-mono)",
+                        }}
+                      >
+                        {s.average}%
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
         {/* header row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span className="q-eyebrow">Your quizzes · {quizzes.length}</span>
@@ -274,6 +341,8 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
+        )}
+          </>
         )}
       </main>
     </div>
