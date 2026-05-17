@@ -91,6 +91,8 @@ PUSHER_SECRET=        # Pusher
 PUSHER_CLUSTER=       # Pusher cluster
 NEXT_PUBLIC_PUSHER_KEY=     # Pusher (client)
 NEXT_PUBLIC_PUSHER_CLUSTER= # Pusher (client)
+OPENROUTER_API_KEY=   # OpenRouter free tier — AI quiz generation
+QUIZ_GEN_MODEL=       # Optional model override (default: free model)
 ```
 
 ## Commands
