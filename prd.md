@@ -397,3 +397,86 @@ These features are explicitly **out of scope** for V1:
 - Quiz categories and search
 - Quiz sharing and collaboration between teachers
 - Dark mode
+
+---
+
+# PRD — Leaderboard, Session Breakdown & Session History
+
+## Problem Statement
+
+After a quiz Session ends, Teachers receive a basic score table and Students see only their own score. There is no sense of ranking between Students, no insight into which Questions tripped up the class, and no way to revisit results from a Session that happened days ago. This makes Quizly useful only while the Room is still open — all actionable teaching signal is lost once the teacher navigates away.
+
+## Solution
+
+Three complementary features that close the post-session gap:
+
+1. **Leaderboard** — Students see how they rank against classmates immediately after results are revealed; Teachers see a ranked podium in the report.
+2. **Session Breakdown** — A per-Question tab in the Teacher's report shows answer-option distribution and highlights the most-missed Questions so the teacher knows what to re-teach.
+3. **Session History** — The existing "Past sessions" sidebar entry in the dashboard is wired up, listing all ended Sessions with summary stats and a link back to the full report.
+
+## User Stories
+
+1. As a Student, I want to see my rank among all Students in the Session so that I know how I performed relative to my classmates.
+2. As a Student, I want to see the top three Students on a leaderboard so that the quiz feels competitive and engaging.
+3. As a Student, I want my own name highlighted on the leaderboard so that I can spot myself at a glance.
+4. As a Student, I want to see how many Students participated in the Session so that I understand the context of my rank.
+5. As a Teacher, I want a ranked leaderboard in the results report so that I can celebrate top performers in class.
+6. As a Teacher, I want to see which Questions had the lowest correct-answer rate so that I know what topics to revisit.
+7. As a Teacher, I want to see the exact number and percentage of Students who selected each Answer Option per Question so that I can identify common misconceptions.
+8. As a Teacher, I want Questions sorted by difficulty (lowest correct rate first) so that the most problematic Questions surface immediately.
+9. As a Teacher, I want a visual bar per Answer Option showing selection share so that I can read the distribution at a glance.
+10. As a Teacher, I want to switch between the "Students" and "Questions" tabs in the results report so that I can explore both views of the same Session data.
+11. As a Teacher, I want to see a list of all my past Sessions in the dashboard so that I can review results from Sessions that have already ended.
+12. As a Teacher, I want each past Session entry to show the quiz title, date run, number of Students, and class average so that I can quickly identify the Session I want to revisit.
+13. As a Teacher, I want to click a past Session and be taken to the full results report so that I have the same detail view I had immediately after the Session ended.
+14. As a Teacher, I want past Sessions sorted newest-first so that my most recent class appears at the top.
+15. As a Teacher, I want to see how many Sessions I have run in total so that I have a sense of my activity over time.
+
+## Implementation Decisions
+
+### Leaderboard
+
+- The `student-results` API response is extended with two new fields: `rank` (1-based integer, dense ranking — ties share the lowest rank) and `totalParticipants`.
+- The student results page gains a leaderboard section above the answer review. Top 3 Students are shown with podium styling; the calling Student's own entry is always visible and highlighted regardless of rank.
+- The teacher's ReportView gains rank numbers (1st, 2nd, 3rd…) in the results table. Rank is assigned positionally from the already-sorted student list — no additional API call.
+- No schema changes required.
+
+### Session Breakdown
+
+- New API endpoint: `GET /api/sessions/[code]/breakdown` (teacher-only). Returns an ordered array of Questions (hardest first by correct-answer rate), each with: id, text, type, order, correctRate (percentage), and an array of Answer Options each with: id, text, isCorrect, selectionCount, selectionPct.
+- The teacher's ReportView adds a tab switcher ("Students" / "Questions"). The Questions tab renders the breakdown list.
+- A Question with zero Student submissions shows 0% for all options.
+- No schema changes required — all data derives from existing `StudentAnswer` records via `gradeQuiz`.
+
+### Session History
+
+- New `GET /api/sessions` handler on the existing sessions route (currently POST-only). Returns all ENDED Sessions owned by the authenticated Teacher, newest-first, with: code, quizTitle, endedAt, studentCount, average.
+- The dashboard "Past sessions" sidebar item becomes a real navigation destination. Clicking it replaces the quiz grid with the sessions list. Each row links to `/session/[code]`, which already renders `ReportView` for ENDED Sessions.
+- Empty state shown when no ended Sessions exist.
+- No schema changes required.
+
+### Shared
+
+- `gradeQuiz` in `lib/grading.ts` is reused for all server-side grade derivation across new endpoints.
+- All new/modified API endpoints enforce teacher-only auth via the existing `auth()` helper.
+
+## Testing Decisions
+
+- Tests assert on HTTP contract (status codes, response shape) and computed values (rank, selectionPct, average), not on internal implementation details.
+- The `gradeQuiz` function is already pure — unit tests for edge cases (ties, zero submissions, all-wrong, all-correct) belong with it.
+- The breakdown endpoint's aggregation logic should be covered by integration tests seeding known `StudentAnswer` records and asserting exact counts.
+- Rank calculation (including tie-breaking) should be unit-tested independently of the HTTP layer.
+
+## Out of Scope
+
+- Real-time leaderboard updates during an active Session (leaderboard is post-quiz only).
+- Per-student detailed answer views for Teachers (which specific option each student picked).
+- Deleting or archiving past Sessions from the history view.
+- Exporting results (CSV / PDF).
+- Pagination of session history.
+- Per-question time-spent analytics.
+
+## Further Notes
+
+- The leaderboard exposes Student names to other Students in the same Session, consistent with the existing lobby behaviour where all Student names are visible to all participants.
+- The `SessionRoom` Prisma model name inconsistency (flagged in CONTEXT.md) is out of scope here and should be a separate refactor.
