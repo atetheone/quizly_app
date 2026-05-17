@@ -1,0 +1,119 @@
+Question: What is the capital of Argentina?
+A) Santiago
+B) Lima
+C) Buenos Aires (correct)
+D) Montevideo
+
+Question: What is the capital of Egypt?
+A) Alexandria
+B) Giza
+C) Cairo (correct)
+D) Luxor
+
+Question: What is the capital of South Korea?
+A) Busan
+B) Incheon
+C) Seoul (correct)
+D) Daegu
+
+Question: What is the capital of Nigeria?
+A) Lagos
+B) Kano
+C) Ibadan
+D) Abuja (correct)
+
+Question: What is the capital of India?
+A) Mumbai
+B) Kolkata
+C) New Delhi (correct)
+D) Bangalore
+
+Question: What is the capital of Brazil?
+A) São Paulo
+B) Rio de Janeiro
+C) Brasília (correct)
+D) Salvador
+
+Question: What is the capital of Turkey?
+A) Istanbul
+B) Izmir
+C) Ankara (correct)
+D) Antalya
+
+Question: What is the executive capital of South Africa?
+A) Cape Town
+B) Johannesburg
+C) Pretoria (correct)
+D) Durban
+
+Question: What is the capital of New Zealand?
+A) Auckland
+B) Christchurch
+C) Wellington (correct)
+D) Dunedin
+
+Question: What is the capital of Switzerland?
+A) Zurich
+B) Geneva
+C) Basel
+D) Bern (correct)
+
+Question: What is the capital of Mexico?
+A) Guadalajara
+B) Monterrey
+C) Mexico City (correct)
+D) Puebla
+
+Question: What is the capital of Indonesia?
+A) Surabaya
+B) Bandung
+C) Jakarta (correct)
+D) Medan
+
+Question: What is the capital of Saudi Arabia?
+A) Mecca
+B) Medina
+C) Jeddah
+D) Riyadh (correct)
+
+Question: What is the capital of Morocco?
+A) Casablanca
+B) Marrakech
+C) Fes
+D) Rabat (correct)
+
+Question: What is the capital of Portugal?
+A) Porto
+B) Lisbon (correct)
+C) Coimbra
+D) Braga
+
+Question: What is the capital of Sweden?
+A) Gothenburg
+B) Malmö
+C) Stockholm (correct)
+D) Uppsala
+
+Question: What is the capital of Vietnam?
+A) Ho Chi Minh City
+B) Da Nang
+C) Hue
+D) Hanoi (correct)
+
+Question: What is the capital of Kazakhstan?
+A) Almaty
+B) Shymkent
+C) Astana (correct)
+D) Karaganda
+
+Question: What is the capital of Ethiopia?
+A) Nairobi
+B) Khartoum
+C) Addis Ababa (correct)
+D) Kampala
+
+Question: What is the capital of Colombia?
+A) Medellín
+B) Cali
+C) Bogotá (correct)
+D) Cartagena

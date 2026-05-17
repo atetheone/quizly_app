@@ -1,0 +1,119 @@
+Question: What is the largest country in the world by land area?
+A) Canada
+B) China
+C) USA
+D) Russia (correct)
+
+Question: What is the longest river in South America?
+A) Orinoco
+B) Amazon (correct)
+C) Paraná
+D) Paraguay
+
+Question: What is the capital of Canada?
+A) Toronto
+B) Montreal
+C) Vancouver
+D) Ottawa (correct)
+
+Question: What is the deepest lake in the world?
+A) Lake Superior
+B) Caspian Sea
+C) Lake Victoria
+D) Lake Baikal (correct)
+
+Question: What is the smallest continent by land area?
+A) Europe
+B) Antarctica
+C) Australia (correct)
+D) South America
+
+Question: What is the highest waterfall in the world?
+A) Niagara Falls
+B) Victoria Falls
+C) Angel Falls (correct)
+D) Iguazu Falls
+
+Question: Which mountain range separates Europe from Asia?
+A) Caucasus Mountains
+B) Ural Mountains (correct)
+C) Alps
+D) Carpathians
+
+Question: Which country has the most natural lakes?
+A) Russia
+B) USA
+C) Finland
+D) Canada (correct)
+
+Question: What is the largest island in the world?
+A) Borneo
+B) Madagascar
+C) Greenland (correct)
+D) New Guinea
+
+Question: Which body of water is the saltiest in the world?
+A) Red Sea
+B) Caspian Sea
+C) Dead Sea (correct)
+D) Aral Sea
+
+Question: Which African country has the largest population?
+A) Ethiopia
+B) Egypt
+C) Nigeria (correct)
+D) South Africa
+
+Question: What is the name of the strait between Europe and Africa?
+A) Strait of Malacca
+B) Strait of Hormuz
+C) Strait of Gibraltar (correct)
+D) Bering Strait
+
+Question: In which country is Machu Picchu located?
+A) Bolivia
+B) Colombia
+C) Ecuador
+D) Peru (correct)
+
+Question: What is the largest desert in the world (including cold deserts)?
+A) Sahara
+B) Gobi
+C) Arabian
+D) Antarctic Desert (correct)
+
+Question: Which country has the most time zones?
+A) Russia
+B) USA
+C) China
+D) France (correct)
+
+Question: What is the smallest country in South America by area?
+A) Uruguay
+B) Paraguay
+C) Suriname (correct)
+D) Ecuador
+
+Question: Which river runs through Egypt?
+A) Niger
+B) Congo
+C) Nile (correct)
+D) Zambezi
+
+Question: On which continent is the Atacama Desert located?
+A) Africa
+B) Asia
+C) South America (correct)
+D) Australia
+
+Question: Which ocean covers about one third of the Earth's surface?
+A) Atlantic Ocean
+B) Indian Ocean
+C) Pacific Ocean (correct)
+D) Arctic Ocean
+
+Question: What is the capital of Australia?
+A) Sydney
+B) Melbourne
+C) Brisbane
+D) Canberra (correct)

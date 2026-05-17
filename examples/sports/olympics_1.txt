@@ -1,0 +1,134 @@
+Question: In which city were the first modern Olympic Games held?
+A) Paris
+B) London
+C) Athens (correct)
+D) Stockholm
+
+Question: How often are the Summer Olympic Games held?
+A) Every 2 years
+B) Every 3 years
+C) Every 4 years (correct)
+D) Every 5 years
+
+Question: How many rings are on the Olympic flag?
+A) 4https://quizly-app-hazel.vercel.app/join/KBMZAU
+B) 5 (correct)
+C) 6
+D) 7
+
+Question: What do the five Olympic rings represent?
+A) The five sports disciplines
+B) The five founding countries
+C) The five continents (correct)
+D) The five original sports
+
+Question: Which country has won the most Olympic gold medals in total history?
+A) China
+B) Great Britain
+C) Soviet Union
+D) USA (correct)
+
+Question: In which year were the first Winter Olympics held?
+A) 1920
+B) 1924 (correct)
+C) 1928
+D) 1932
+
+Question: Which sport was dropped from the Olympics after 2008?
+A) Softball and Baseball (correct)
+B) Wrestling
+C) Archery
+D) Handball
+
+Question: Who lit the Olympic cauldron at the 1996 Atlanta Olympics?
+A) Carl Lewis
+B) Jesse Owens
+C) Muhammad Ali (correct)
+D) Michael Johnson
+
+Question: Which city has hosted the Summer Olympics the most times?
+A) Paris
+B) Athens
+C) Los Angeles
+D) London (correct)
+
+Question: What is the Olympic motto?
+A) Stronger, Higher, Faster
+B) Citius, Altius, Fortius (correct)
+C) Unity, Excellence, Respect
+D) Swifter, Higher, Stronger
+
+Question: In which year did women first compete in the Olympic Games?
+A) 1896
+B) 1900 (correct)
+C) 1912
+D) 1920
+
+Question: Which athlete won 4 gold medals at the 1936 Berlin Olympics?
+A) Jim Thorpe
+B) Paavo Nurmi
+C) Jesse Owens (correct)
+D) Fanny Blankers-Koen
+
+Question: What is the Olympic flame carried in?
+A) A lantern
+B) A torch (correct)
+C) A bowl
+D) A brazier
+
+Question: Which country hosted the 2016 Summer Olympics?
+A) Argentina
+B) Colombia
+C) Brazil (correct)
+D) Mexico
+
+Question: How many gold medals did Michael Phelps win in his Olympic career?
+A) 18
+B) 20
+C) 23 (correct)
+D) 25
+
+Question: Which sport made its Olympic debut at the 2016 Rio Games?
+A) Surfing
+B) Golf (correct)
+C) Rugby Sevens (correct)
+
+Hmm, both Golf and Rugby Sevens debuted at Rio 2016. Let me change:
+
+Question: In which event does the winner receive no medal but traditionally a laurel wreath?
+A) Marathon
+B) Decathlon
+C) No such event exists in modern Olympics (correct)
+D) 100m sprint
+
+That's a bad question. Let me replace:
+
+Question: Which country won the most gold medals at the 2020 Tokyo Summer Olympics?
+A) China
+B) USA (correct)
+C) Japan
+D) Great Britain
+
+Question: What is the name of the ceremony that opens each Olympic Games?
+A) Torch Relay
+B) Flag Parade
+C) Opening Ceremony (correct)
+D) Parade of Nations
+
+Question: Which city hosted the first Olympics to be held in Asia?
+A) Beijing
+B) Seoul
+C) Tokyo (correct)
+D) Singapore
+
+Question: In the Olympic marathon, what is the approximate distance in kilometers?
+A) 40 km
+B) 42.195 km (correct)
+C) 45 km
+D) 50 km
+
+Question: Which athlete is known as the fastest man in the world for breaking the 100m world record multiple times?
+A) Carl Lewis
+B) Asafa Powell
+C) Usain Bolt (correct)
+D) Maurice Greene

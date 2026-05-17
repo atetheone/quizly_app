@@ -1,0 +1,119 @@
+Question: How many players are on the field for each team in soccer?
+A) 9
+B) 10
+C) 11 (correct)
+D) 12
+
+Question: Which country has won the most FIFA World Cups?
+A) Argentina
+B) Germany
+C) Italy
+D) Brazil (correct)
+
+Question: How long is a standard soccer match in minutes?
+A) 80
+B) 85
+C) 90 (correct)
+D) 95
+
+Question: Which player has won the most Ballon d'Or awards?
+A) Cristiano Ronaldo
+B) Lionel Messi (correct)
+C) Ronaldo Nazário
+D) Zinedine Zidane
+
+Question: In which year was the first FIFA World Cup held?
+A) 1926
+B) 1930 (correct)
+C) 1934
+D) 1938
+
+Question: Which club has won the most UEFA Champions League titles?
+A) Barcelona
+B) Bayern Munich
+C) AC Milan
+D) Real Madrid (correct)
+
+Question: What is the maximum number of substitutes allowed in a standard FIFA match?
+A) 3
+B) 4
+C) 5 (correct)
+D) 6
+
+Question: Which country hosted the 2022 FIFA World Cup?
+A) UAE
+B) Qatar (correct)
+C) Saudi Arabia
+D) Bahrain
+
+Question: What does VAR stand for in football?
+A) Video Assisted Referee (correct)
+B) Video Action Review
+C) Virtual Assisted Referee
+D) Video Analysis Review
+
+Question: What color card results in a player being sent off?
+A) White
+B) Yellow
+C) Orange
+D) Red (correct)
+
+Question: How many minutes are played in each half of a standard match?
+A) 40
+B) 42
+C) 45 (correct)
+D) 50
+
+Question: Which Brazilian player is known as "O Fenômeno"?
+A) Pelé
+B) Ronaldinho
+C) Ronaldo Nazário (correct)
+D) Romário
+
+Question: In which city is the Santiago Bernabéu stadium located?
+A) Barcelona
+B) Seville
+C) Madrid (correct)
+D) Valencia
+
+Question: How far is the penalty spot from the goal line in soccer?
+A) 8 meters
+B) 10 meters
+C) 11 meters (correct)
+D) 12 meters
+
+Question: Which nation won the first FIFA Women's World Cup in 1991?
+A) Germany
+B) Norway
+C) USA (correct)
+D) Sweden
+
+Question: What is the name of the award given to the top scorer at each FIFA World Cup?
+A) Silver Boot
+B) Bronze Boot
+C) Golden Boot (correct)
+D) World Cup Boot
+
+Question: Which player scored the infamous "Hand of God" goal?
+A) Pelé
+B) Zinedine Zidane
+C) Diego Maradona (correct)
+D) Michel Platini
+
+Question: Which country won the 2018 FIFA World Cup?
+A) Croatia
+B) Belgium
+C) France (correct)
+D) England
+
+Question: Which player holds the record for most goals in FIFA World Cup history?
+A) Pelé
+B) Ronaldo Nazário
+C) Just Fontaine
+D) Miroslav Klose (correct)
+
+Question: In soccer, what describes a free kick where the ball must be touched by another player before a shot on goal?
+A) Direct free kick
+B) Penalty kick
+C) Corner kick
+D) Indirect free kick (correct)

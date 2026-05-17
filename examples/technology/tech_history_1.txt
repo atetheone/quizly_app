@@ -1,0 +1,119 @@
+Question: Who co-founded Apple Inc.?
+A) Bill Gates and Paul Allen
+B) Steve Jobs and Steve Wozniak (correct)
+C) Larry Page and Sergey Brin
+D) Mark Zuckerberg and Eduardo Saverin
+
+Question: In which year was the World Wide Web invented?
+A) 1985
+B) 1989 (correct)
+C) 1993
+D) 1995
+
+Question: What does "CPU" stand for?
+A) Central Processing Unit (correct)
+B) Computer Processing Unit
+C) Central Power Unit
+D) Computer Power Unit
+
+Question: Who is known as the father of modern computing?
+A) John von Neumann
+B) Ada Lovelace
+C) Alan Turing (correct)
+D) Claude Shannon
+
+Question: What programming language was developed by James Gosling at Sun Microsystems?
+A) Python
+B) C++
+C) Java (correct)
+D) Ruby
+
+Question: Which company developed the Android operating system?
+A) Apple
+B) Microsoft
+C) Google (correct)
+D) Samsung
+
+Question: What does "RAM" stand for?
+A) Random Access Memory (correct)
+B) Rapid Access Memory
+C) Read Access Memory
+D) Remote Access Memory
+
+Question: In which year was the first iPhone released?
+A) 2005
+B) 2006
+C) 2007 (correct)
+D) 2008
+
+Question: What does "HTTP" stand for?
+A) HyperText Transfer Protocol (correct)
+B) High Transfer Text Protocol
+C) HyperText Transmission Protocol
+D) High Text Transfer Protocol
+
+Question: Who founded Microsoft?
+A) Steve Jobs and Steve Wozniak
+B) Larry Page and Sergey Brin
+C) Bill Gates and Paul Allen (correct)
+D) Jeff Bezos and Andy Jassy
+
+Question: What is the name of the programming language created by Guido van Rossum?
+A) Ruby
+B) Perl
+C) Python (correct)
+D) PHP
+
+Question: What does "open source" mean in software?
+A) Software that is free to use
+B) Software with publicly available source code (correct)
+C) Software that works on any operating system
+D) Software without copyright
+
+Question: What does "URL" stand for?
+A) Universal Resource Locator
+B) Uniform Resource Locator (correct)
+C) Uniform Reference Locator
+D) Universal Reference Link
+
+Question: In which decade was the internet made available to the general public?
+A) 1970s
+B) 1980s
+C) 1990s (correct)
+D) 2000s
+
+Question: What is the main function of a firewall in computing?
+A) Speed up internet connection
+B) Store data securely
+C) Monitor and control network traffic (correct)
+D) Compress files
+
+Question: Which company created the PlayStation gaming console?
+A) Microsoft
+B) Nintendo
+C) Sega
+D) Sony (correct)
+
+Question: What does "SSD" stand for in computing?
+A) Solid State Drive (correct)
+B) Static Storage Device
+C) Secure Storage Drive
+D) System Storage Device
+
+Question: Who founded Amazon?
+A) Elon Musk
+B) Larry Ellison
+C) Jeff Bezos (correct)
+D) Jack Ma
+
+Question: What does "Wi-Fi" stand for?
+A) Wireless Fidelity (correct)
+B) Wide Frequency
+C) Wireless Finder
+D) Web Interface
+
+Question: Which programming language is primarily used for web page styling?
+A) HTML
+B) JavaScript
+C) CSS (correct)
+D) PHP

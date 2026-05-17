@@ -1,0 +1,119 @@
+Question: Which country is the origin of sushi?
+A) China
+B) Korea
+C) Japan (correct)
+D) Thailand
+
+Question: What is the main ingredient in guacamole?
+A) Tomato
+B) Avocado (correct)
+C) Lime
+D) Jalapeño
+
+Question: What is the world's most expensive spice by weight?
+A) Vanilla
+B) Cardamom
+C) Truffle
+D) Saffron (correct)
+
+Question: Which country is the largest producer of wine in the world?
+A) France
+B) Italy (correct)
+C) Spain
+D) USA
+
+Question: What is the main ingredient in hummus?
+A) Lentils
+B) Chickpeas (correct)
+C) Kidney beans
+D) White beans
+
+Question: Which country is famous for its dish "paella"?
+A) Portugal
+B) Italy
+C) Greece
+D) Spain (correct)
+
+Question: What is "sake"?
+A) Japanese rice wine (correct)
+B) Korean fermented drink
+C) Chinese grain spirit
+D) Vietnamese rice beer
+
+Question: Which ingredient gives curry its distinctive yellow color?
+A) Ginger
+B) Cumin
+C) Turmeric (correct)
+D) Coriander
+
+Question: What is the main ingredient in miso soup?
+A) Tofu
+B) Seaweed
+C) Fermented soybean paste (correct)
+D) Fish stock
+
+Question: Which country is famous for the fermented dish "kimchi"?
+A) Japan
+B) China
+C) Korea (correct)
+D) Vietnam
+
+Question: What type of milk is traditionally used to make buffalo mozzarella?
+A) Cow's milk
+B) Goat's milk
+C) Sheep's milk
+D) Buffalo milk (correct)
+
+Question: Which country produces the most cocoa in the world?
+A) Belgium
+B) Ghana
+C) Brazil
+D) Ivory Coast (correct)
+
+Question: What gives bread its airy texture?
+A) Salt
+B) Sugar
+C) Yeast (correct)
+D) Butter
+
+Question: Which country is famous for "feijoada," a black bean and meat stew?
+A) Argentina
+B) Mexico
+C) Brazil (correct)
+D) Colombia
+
+Question: What is the traditional drink served at Japanese tea ceremonies?
+A) Sencha
+B) Hojicha
+C) Matcha (correct)
+D) Gyokuro
+
+Question: Which country invented pasta?
+A) France
+B) Spain
+C) China
+D) Italy (correct)
+
+Question: What is "prosciutto"?
+A) An Italian cheese
+B) Italian dry-cured ham (correct)
+C) A Spanish sausage
+D) A French pâté
+
+Question: Which spice is made from dried chili peppers?
+A) Paprika (correct)
+B) Cumin
+C) Coriander
+D) Cardamom
+
+Question: What is the traditional base of a French "bouillabaisse"?
+A) Chicken broth
+B) Beef broth
+C) Fish/seafood broth (correct)
+D) Vegetable broth
+
+Question: Which grain is used to make traditional Japanese rice wine (sake)?
+A) Barley
+B) Wheat
+C) Rice (correct)
+D) Millet

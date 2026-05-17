@@ -1,0 +1,119 @@
+Question: What is the chemical symbol for sodium?
+A) So
+B) Sd
+C) Na (correct)
+D) Sn
+
+Question: What is the unit of electrical resistance?
+A) Volt
+B) Ampere
+C) Ohm (correct)
+D) Watt
+
+Question: What is the pH of pure water?
+A) 5
+B) 6
+C) 7 (correct)
+D) 8
+
+Question: Which particle has a negative electric charge?
+A) Proton
+B) Neutron
+C) Electron (correct)
+D) Positron
+
+Question: What does E=mc² describe?
+A) The speed of light
+B) Mass-energy equivalence (correct)
+C) The force of gravity
+D) The quantum of energy
+
+Question: What is the atomic number of carbon?
+A) 4
+B) 6 (correct)
+C) 8
+D) 12
+
+Question: What type of chemical bond involves the sharing of electrons?
+A) Ionic bond
+B) Metallic bond
+C) Covalent bond (correct)
+D) Hydrogen bond
+
+Question: How many elements are currently on the periodic table?
+A) 108
+B) 112
+C) 118 (correct)
+D) 124
+
+Question: Which law states that the pressure and volume of a gas are inversely proportional at constant temperature?
+A) Charles's Law
+B) Avogadro's Law
+C) Dalton's Law
+D) Boyle's Law (correct)
+
+Question: What is absolute zero in Celsius?
+A) 0°C
+B) -100°C
+C) -200°C
+D) -273.15°C (correct)
+
+Question: What is the unit of force in the SI system?
+A) Joule
+B) Pascal
+C) Newton (correct)
+D) Watt
+
+Question: What gas is produced when acids react with metals?
+A) Oxygen
+B) Carbon dioxide
+C) Hydrogen (correct)
+D) Nitrogen
+
+Question: What is the chemical formula for table salt?
+A) NaOH
+B) Na2O
+C) NaCl (correct)
+D) NaHCO3
+
+Question: Which type of radiation has the highest penetrating power?
+A) Alpha radiation
+B) Beta radiation
+C) Gamma radiation (correct)
+D) UV radiation
+
+Question: Which is the most reactive group of metals on the periodic table?
+A) Transition metals
+B) Alkaline earth metals
+C) Alkali metals (correct)
+D) Noble gases
+
+Question: Which scientist proposed the heliocentric model of the solar system?
+A) Galileo Galilei
+B) Johannes Kepler
+C) Nicolaus Copernicus (correct)
+D) Tycho Brahe
+
+Question: What is the name of the process by which a liquid turns into gas?
+A) Condensation
+B) Sublimation
+C) Evaporation (correct)
+D) Solidification
+
+Question: Which subatomic particle determines the element of an atom?
+A) Neutron
+B) Electron
+C) Proton (correct)
+D) Quark
+
+Question: What is the approximate speed of sound in air?
+A) 143 m/s
+B) 243 m/s
+C) 343 m/s (correct)
+D) 443 m/s
+
+Question: What is the freezing point of water at standard pressure?
+A) -10°C
+B) 0°C (correct)
+C) 4°C
+D) 10°C

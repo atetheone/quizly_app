@@ -1,0 +1,119 @@
+Question: How many players are on a basketball team during play?
+A) 4
+B) 5 (correct)
+C) 6
+D) 7
+
+Question: In which sport is the term "love" used as a score?
+A) Badminton
+B) Squash
+C) Tennis (correct)
+D) Table tennis
+
+Question: How many holes are there in a standard golf round?
+A) 9
+B) 18 (correct)
+C) 27
+D) 36
+
+Question: Who invented basketball?
+A) James Naismith (correct)
+B) Walter Camp
+C) Abner Doubleday
+D) William Morgan
+
+Question: In which sport do players compete for the Stanley Cup?
+A) Basketball
+B) Baseball
+C) American Football
+D) Ice Hockey (correct)
+
+Question: How many players are on a volleyball team on the court?
+A) 5
+B) 6 (correct)
+C) 7
+D) 8
+
+Question: What is the maximum score in a single game of ten-pin bowling?
+A) 270
+B) 290
+C) 300 (correct)
+D) 320
+
+Question: What is the length of a standard Olympic swimming pool in meters?
+A) 25
+B) 50 (correct)
+C) 75
+D) 100
+
+Question: How many events are in a decathlon?
+A) 8
+B) 9
+C) 10 (correct)
+D) 12
+
+Question: What sport is played at the US Masters tournament?
+A) Tennis
+B) Golf (correct)
+C) Cricket
+D) Polo
+
+Question: In boxing, how long is a standard round?
+A) 2 minutes
+B) 3 minutes (correct)
+C) 4 minutes
+D) 5 minutes
+
+Question: How many points is a touchdown worth in American football?
+A) 4
+B) 5
+C) 6 (correct)
+D) 7
+
+Question: In a men's Grand Slam tennis match, how many sets must a player win?
+A) 2
+B) 3 (correct)
+C) 4
+D) 5
+
+Question: What sport uses a shuttlecock?
+A) Squash
+B) Racquetball
+C) Badminton (correct)
+D) Pickleball
+
+Question: How many rings are on the Olympic flag?
+A) 4
+B) 5 (correct)
+C) 6
+D) 7
+
+Question: In which city were the first modern Olympic Games held?
+A) Paris
+B) London
+C) Athens (correct)
+D) Stockholm
+
+Question: What is the national sport of Japan?
+A) Judo
+B) Karate
+C) Sumo (correct)
+D) Kendo
+
+Question: How many players are on a rugby union team?
+A) 13
+B) 14
+C) 15 (correct)
+D) 16
+
+Question: In swimming, which stroke requires both arms to move simultaneously in a windmill motion?
+A) Backstroke
+B) Breaststroke
+C) Freestyle
+D) Butterfly (correct)
+
+Question: How many players are on a baseball team on the field?
+A) 8
+B) 9 (correct)
+C) 10
+D) 11
