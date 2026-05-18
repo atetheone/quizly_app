@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { QLogo } from "@/components/q-ui";
 
 export default function JoinWithCodePage() {
   const router = useRouter();
   const params = useParams();
+  const t = useTranslations("join");
   const code = (params.code as string).toUpperCase();
   const [name, setName] = useState("");
   const [quizTitle, setQuizTitle] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export default function JoinWithCodePage() {
       sessionStorage.setItem("sessionCode", joinData.sessionCode);
       router.push(`/play/${code}`);
     } else {
-      setError(joinData.error || "Failed to join");
+      setError(joinData.error || t("failedToJoin"));
       setLoading(false);
     }
   }
@@ -46,7 +48,7 @@ export default function JoinWithCodePage() {
         <QLogo size={26} />
 
         <div>
-          <span className="q-eyebrow">Join quiz</span>
+          <span className="q-eyebrow">{t("joinQuizTitle")}</span>
           <div
             style={{
               fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "clamp(36px, 12vw, 64px)",
@@ -66,13 +68,13 @@ export default function JoinWithCodePage() {
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label htmlFor="student-name" className="q-eyebrow">Your name</label>
+            <label htmlFor="student-name" className="q-eyebrow">{t("yourNameLabel")}</label>
             <input
               id="student-name"
               className="q-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your name"
+              placeholder={t("yourNamePlaceholder")}
               maxLength={50}
               required
               autoFocus
@@ -87,7 +89,7 @@ export default function JoinWithCodePage() {
           )}
 
           <button type="submit" className="q-btn q-btn-primary q-btn-lg" disabled={loading || !name.trim()} style={{ width: "100%" }}>
-            {loading ? "Joining…" : `Join ${quizTitle ?? "quiz"} →`}
+            {loading ? t("joining") : `${t("joinQuiz")} ${quizTitle ?? ""} →`}
           </button>
         </form>
       </div>
