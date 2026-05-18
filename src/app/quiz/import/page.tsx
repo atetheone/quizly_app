@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 
+type Level = "EASY" | "MEDIUM" | "HARD";
+const LEVELS: Level[] = ["EASY", "MEDIUM", "HARD"];
+const cap = (s: string) => s[0] + s.slice(1).toLowerCase();
+
 const EXAMPLE_TEXT = `Question: What is the powerhouse of the cell?
 A) Ribosome
 B) Mitochondria (correct)
@@ -28,6 +32,56 @@ export default function ImportQuizPage() {
   const [timeLimit, setTimeLimit] = useState(15);
   const [rawText, setRawText] = useState(EXAMPLE_TEXT);
   const [loading, setLoading] = useState(false);
+
+  // ── AI generation panel ──
+  const [genOpen, setGenOpen] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("generate") === "1"
+  );
+  const [topic, setTopic] = useState("");
+  const [count, setCount] = useState(10);
+  const [level, setLevel] = useState<Level>("MEDIUM");
+  const [mixMode, setMixMode] = useState(false);
+  const [mix, setMix] = useState({ easy: 3, medium: 5, hard: 2 });
+  const [generating, setGenerating] = useState(false);
+
+  const mixTotal = mix.easy + mix.medium + mix.hard;
+  const genDisabled =
+    generating ||
+    !topic.trim() ||
+    count < 1 ||
+    count > 20 ||
+    (mixMode && mixTotal !== count);
+
+  async function handleGenerate() {
+    setGenerating(true);
+    const spread = mixMode
+      ? ({ kind: "mix", ...mix } as const)
+      : ({ kind: "single", level } as const);
+    try {
+      const res = await fetch("/api/quizzes/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: topic.trim(), count, spread }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        setRawText(d.rawText);
+        if (!title) {
+          setTitle(`${topic.trim()} · ${mixMode ? "Mixed" : cap(level)}`);
+        }
+        toast.success(
+          `Generated ${d.parsedCount} question${d.parsedCount !== 1 ? "s" : ""} — review & edit below`
+        );
+      } else {
+        toast.error(d.error || "Generation failed");
+      }
+    } catch {
+      toast.error("Generation failed — check your connection");
+    }
+    setGenerating(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -89,6 +143,115 @@ export default function ImportQuizPage() {
         </div>
       </div>
 
+      {/* AI generation panel */}
+      <div style={{ borderBottom: "1px solid var(--q-line-2)", background: "var(--q-bg)" }}>
+        <button
+          type="button"
+          onClick={() => setGenOpen((o) => !o)}
+          style={{
+            display: "flex", alignItems: "center", gap: 8, width: "100%",
+            padding: "10px 20px", background: "transparent", border: "none",
+            cursor: "pointer", fontFamily: "var(--q-sans)", fontSize: 13,
+            color: "var(--q-ink-2)", textAlign: "left",
+          }}
+        >
+          <span style={{ fontSize: 14 }}>✨</span>
+          <span style={{ fontWeight: 600 }}>Generate with AI</span>
+          <span style={{ color: "var(--q-ink-4)" }}>
+            — describe a topic, get questions to edit
+          </span>
+          <span style={{ marginLeft: "auto", color: "var(--q-ink-4)" }}>
+            {genOpen ? "▲" : "▼"}
+          </span>
+        </button>
+
+        {genOpen && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, padding: "4px 20px 16px", alignItems: "flex-end" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, minWidth: 240 }}>
+              <span className="q-eyebrow">Topic</span>
+              <input
+                className="q-input"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="e.g. Photosynthesis, French Revolution, Cycling…"
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span className="q-eyebrow">Questions</span>
+              <input
+                className="q-input"
+                type="number" min={1} max={20} value={count}
+                onChange={(e) => setCount(Number(e.target.value))}
+                style={{ width: 72 }}
+              />
+            </div>
+
+            {!mixMode ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span className="q-eyebrow">Difficulty</span>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {LEVELS.map((l) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => setLevel(l)}
+                      className="q-chip"
+                      style={{
+                        cursor: "pointer",
+                        background: level === l ? "var(--q-ink)" : "var(--q-bg-2)",
+                        color: level === l ? "var(--q-bg)" : "var(--q-ink-2)",
+                        fontWeight: level === l ? 600 : 400,
+                      }}
+                    >
+                      {cap(l)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span className="q-eyebrow">
+                  Mix{" "}
+                  <span style={{ color: mixTotal === count ? "var(--q-green)" : "var(--q-coral)" }}>
+                    ({mixTotal}/{count})
+                  </span>
+                </span>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {(["easy", "medium", "hard"] as const).map((k) => (
+                    <div key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                      <input
+                        className="q-input"
+                        type="number" min={0} max={20} value={mix[k]}
+                        onChange={(e) => setMix((m) => ({ ...m, [k]: Number(e.target.value) }))}
+                        style={{ width: 56 }}
+                      />
+                      <span style={{ fontSize: 10, color: "var(--q-ink-4)", fontFamily: "var(--q-sans)" }}>
+                        {cap(k)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontFamily: "var(--q-sans)", color: "var(--q-ink-3)", cursor: "pointer", paddingBottom: 6 }}>
+              <input type="checkbox" checked={mixMode} onChange={(e) => setMixMode(e.target.checked)} />
+              Custom mix
+            </label>
+
+            <button
+              type="button"
+              className="q-btn q-btn-primary"
+              onClick={handleGenerate}
+              disabled={genDisabled}
+            >
+              {generating ? "Generating…" : "✨ Generate"}
+            </button>
+          </div>
+        )}
+      </div>
+
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* text editor */}
         <div style={{ flex: 1, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -133,13 +296,13 @@ export default function ImportQuizPage() {
                       {isMultiple ? "Multiple" : "Single"}
                     </span>
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: 16, fontFamily: "var(--q-sans)" }}>{qText}</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  <div style={{ fontWeight: 600, fontSize: 16, fontFamily: "var(--q-sans)", overflowWrap: "anywhere", minWidth: 0 }}>{qText}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
                     {opts.map((o, j) => {
                       const correct = o.includes("(correct)");
                       const text = o.replace(/^[A-Z]\)\s*/, "").replace("(correct)", "").trim();
                       return (
-                        <span key={j} className="q-chip" style={{ background: correct ? "var(--q-green-soft)" : "var(--q-bg-2)", borderColor: correct ? "var(--q-green)" : "var(--q-line-2)", fontWeight: correct ? 600 : 400 }}>
+                        <span key={j} className="q-chip" style={{ background: correct ? "var(--q-green-soft)" : "var(--q-bg-2)", borderColor: correct ? "var(--q-green)" : "var(--q-line-2)", fontWeight: correct ? 600 : 400, whiteSpace: "normal", overflowWrap: "anywhere", alignItems: "flex-start", maxWidth: "100%", borderRadius: 8 }}>
                           <b>{o[0]}.</b> {text} {correct && "✓"}
                         </span>
                       );
