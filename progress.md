@@ -123,7 +123,7 @@
   - [x] PR5: quiz editor (new + edit)
   - [x] PR6: join + join/[code]
   - [x] PR7: play/[code] + timer/score formatting
-- [ ] PR8: session/[code] + final stray-string sweep
+  - [x] PR8: session/[code] + final stray-string sweep
 
 ### Phase 7: Polish & Deployment
 - [x] Docker Compose for PostgreSQL (postgres:16-alpine)
@@ -193,3 +193,4 @@
 | 2026-05-18 | 10 | i18n PR5: quiz editor (new + edit) localized (issue #18) |
 | 2026-05-18 | 10 | i18n PR6: join pages localized (issue #20) |
 | 2026-05-18 | 10 | i18n PR7: play page localized (issue #22) |
+| 2026-05-18 | 10 | i18n PR8: session page + metadata + final sweep (issue #24) |
