@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "Quizly",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "language": "Langue",
+    "languageEnglish": "Anglais",
+    "languageFrench": "Français",
+    "questionCount": "{count, plural, =0 {Aucune question} one {# question} other {# questions}}",
+    "studentCount": "{count, plural, =0 {Aucun élève} one {# élève} other {# élèves}}",
+    "hereCount": "{count, plural, other {# présent(s)}}",
+    "timer": "{minutes}:{seconds}"
+  },
+  "validation": {
+    "questionTextRequired": "Le texte de la question est requis",
+    "answerTextRequired": "Le texte de la réponse est requis",
+    "minAnswerOptions": "Au moins 2 options de réponse sont requises",
+    "maxAnswerOptions": "6 options de réponse au maximum",
+    "titleRequired": "Le titre est requis",
+    "titleTooLong": "Titre trop long",
+    "timeLimitMin": "La durée doit être d'au moins 1 minute",
+    "timeLimitMax": "Durée maximale de 120 minutes",
+    "minQuestions": "Au moins 1 question est requise",
+    "maxQuestions": "20 questions au maximum",
+    "nameRequired": "Le nom est requis",
+    "nameTooLong": "Nom trop long",
+    "invalidEmail": "E-mail invalide",
+    "passwordMin": "Le mot de passe doit comporter au moins 6 caractères",
+    "topicRequired": "Le sujet est requis",
+    "difficultySum": "La répartition des difficultés doit correspondre au nombre de questions"
+  },
+  "errors": {
+    "unauthorized": "Non autorisé",
+    "invalidInput": "Entrée invalide",
+    "internal": "Erreur interne du serveur",
+    "roomNotFound": "Salle introuvable",
+    "roomClosed": "Cette salle n'accepte plus de nouveaux élèves",
+    "emailRegistered": "Cet e-mail est déjà enregistré",
+    "genUnavailable": "La génération par IA est momentanément indisponible. Réessayez bientôt.",
+    "genRateLimit": "Limite de l'offre gratuite atteinte. Réessayez dans un instant.",
+    "genNotConfigured": "La génération par IA n'est pas configurée. Définissez OPENROUTER_API_KEY (gratuit sur openrouter.ai).",
+    "genBadKey": "La génération par IA a rejeté la clé API. Vérifiez OPENROUTER_API_KEY.",
+    "genEmpty": "L'IA a renvoyé une réponse vide.",
+    "genInvalidQuiz": "L'IA n'a pas pu produire un quiz valide. Réessayez ou reformulez le sujet."
+  }
+}
