@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "errors.unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: "Invalid input", details: result.error.flatten().fieldErrors },
+        { error: "errors.invalidInput", details: result.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -26,14 +26,14 @@ export async function POST(request: NextRequest) {
 
     if (!parsed) {
       return NextResponse.json(
-        { error: "Could not parse quiz text. Check format." },
+        { error: "errors.importParseFailed" },
         { status: 400 }
       );
     }
 
     if (parsed.questions.length > 20) {
       return NextResponse.json(
-        { error: "Maximum 20 questions allowed" },
+        { error: "errors.importTooMany" },
         { status: 400 }
       );
     }
@@ -41,13 +41,13 @@ export async function POST(request: NextRequest) {
     for (const q of parsed.questions) {
       if (q.answerOptions.length < 2 || q.answerOptions.length > 6) {
         return NextResponse.json(
-          { error: `Question "${q.text}" must have 2-6 answer options` },
+          { error: "errors.importBadOptions", params: { q: q.text } },
           { status: 400 }
         );
       }
       if (!q.answerOptions.some((a) => a.isCorrect)) {
         return NextResponse.json(
-          { error: `Question "${q.text}" must have at least 1 correct answer` },
+          { error: "errors.importNoCorrect", params: { q: q.text } },
           { status: 400 }
         );
       }
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(quiz, { status: 201 });
   } catch {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "errors.internal" },
       { status: 500 }
     );
   }

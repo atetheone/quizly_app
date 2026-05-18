@@ -18,14 +18,14 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "errors.unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const result = quizGenerateSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
-        { error: "Invalid input", details: result.error.flatten().fieldErrors },
+        { error: "errors.invalidInput", details: result.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -63,9 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      {
-        error: `AI could not produce a valid quiz (${lastReason}). Try again or rephrase the topic.`,
-      },
+      { error: "errors.genInvalidQuiz", reason: lastReason },
       { status: 502 }
     );
   } catch (err) {
@@ -73,7 +71,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: err.message }, { status: 502 });
     }
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "errors.internal" },
       { status: 500 }
     );
   }
