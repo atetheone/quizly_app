@@ -122,7 +122,7 @@
   - [x] PR4: dashboard + date/plural formatting
   - [x] PR5: quiz editor (new + edit)
   - [x] PR6: join + join/[code]
-- [ ] PR7: play/[code] + timer/score formatting
+  - [x] PR7: play/[code] + timer/score formatting
 - [ ] PR8: session/[code] + final stray-string sweep
 
 ### Phase 7: Polish & Deployment
@@ -192,3 +192,4 @@
 | 2026-05-18 | 10 | i18n PR4: dashboard + locale-aware dates localized (issue #16) |
 | 2026-05-18 | 10 | i18n PR5: quiz editor (new + edit) localized (issue #18) |
 | 2026-05-18 | 10 | i18n PR6: join pages localized (issue #20) |
+| 2026-05-18 | 10 | i18n PR7: play page localized (issue #22) |

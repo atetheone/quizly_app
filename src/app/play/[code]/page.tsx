@@ -6,6 +6,7 @@ import Pusher from "pusher-js";
 import { isPusherConfigured } from "@/lib/use-pusher";
 import { QLogo, QAvatar } from "@/components/q-ui";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 type AnswerOption = { id: string; text: string };
 type Question = { id: string; text: string; type: "SINGLE" | "MULTIPLE"; order: number; answerOptions: AnswerOption[] };
@@ -19,6 +20,8 @@ function fmt(s: number) { return `${Math.floor(s / 60)}:${(s % 60).toString().pa
 export default function PlayPage() {
   const params = useParams();
   const code = params.code as string;
+  const t = useTranslations("play");
+  const tCommon = useTranslations("common");
   const [phase, setPhase] = useState<Phase>("lobby");
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
@@ -179,15 +182,15 @@ export default function PlayPage() {
         <div style={{ background: "var(--q-indigo)", color: "#fff", padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{code}</span>
-            <span className="q-chip q-chip-yellow" style={{ fontSize: 11, color: "var(--q-ink)" }}>WAITING</span>
+            <span className="q-chip q-chip-yellow" style={{ fontSize: 11, color: "var(--q-ink)" }}>{t("waitingBadge")}</span>
           </div>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 28, color: "#fff", letterSpacing: "-0.025em" }}>
-            {sessionInfo?.quizTitle ?? "Waiting…"}
+            {sessionInfo?.quizTitle ?? t("loading")}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
             <QAvatar name={studentName} size={36} />
             <div>
-              <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>You</span>
+              <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>{t("youBadge")}</span>
               <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 18, color: "#fff" }}>{studentName}</div>
             </div>
           </div>
@@ -195,15 +198,15 @@ export default function PlayPage() {
 
         <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", gap: 12, overflow: "auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span className="q-eyebrow">In the lobby</span>
-            <span aria-live="polite" style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>{lobbyStudents.length + 1} here</span>
+            <span className="q-eyebrow">{t("inTheLobby")}</span>
+            <span aria-live="polite" style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>{tCommon("hereCount", { count: lobbyStudents.length + 1 })}</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
             {[studentName, ...lobbyStudents].map((n, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: 8, background: "var(--q-bg-2)", borderRadius: 10 }}>
                 <QAvatar name={n} size={24} />
                 <span style={{ fontSize: 14, fontWeight: 500, fontFamily: "var(--q-sans)" }}>{n}</span>
-                {i === 0 && <span className="q-chip q-chip-yellow" style={{ fontSize: 10, marginLeft: "auto" }}>you</span>}
+                {i === 0 && <span className="q-chip q-chip-yellow" style={{ fontSize: 10, marginLeft: "auto" }}>{t("youBadge")}</span>}
               </div>
             ))}
           </div>
@@ -215,7 +218,7 @@ export default function PlayPage() {
               <span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--q-ink-3)", opacity: 0.3 + i * 0.2, animation: `pulse ${1 + i * 0.3}s infinite` }} />
             ))}
           </div>
-          <span style={{ fontSize: 14, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>Waiting for teacher to start…</span>
+          <span style={{ fontSize: 14, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>{t("waitingForTeacher")}</span>
         </div>
       </div>
     );
@@ -225,7 +228,7 @@ export default function PlayPage() {
   if (phase === "countdown") {
     return (
       <div style={{ minHeight: "100vh", background: "var(--q-yellow)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, textAlign: "center", padding: 20 }}>
-        <span className="q-eyebrow">Get ready</span>
+        <span className="q-eyebrow">{t("getReady")}</span>
         <div style={{ position: "relative", width: "min(240px, 65vw)", height: "min(240px, 65vw)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", inset: 0, opacity: 0.3 }} className="q-spike" />
           <div aria-live="assertive" aria-atomic="true" style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "min(200px, 54vw)", lineHeight: 1, color: "var(--q-ink)", position: "relative" }}>
@@ -236,7 +239,7 @@ export default function PlayPage() {
           {sessionInfo?.quizTitle}
         </div>
         <div style={{ fontSize: 15, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)" }}>
-          {questions.length} questions · {sessionInfo?.timeLimit}m · go at your own pace
+          {t("quizInfo", { count: questions.length, minutes: sessionInfo?.timeLimit ?? 0 })}
         </div>
       </div>
     );
@@ -254,13 +257,13 @@ export default function PlayPage() {
         <div style={{ position: "sticky", top: 0, background: "var(--q-bg)", borderBottom: "1px solid var(--q-line-2)", padding: 16, display: "flex", flexDirection: "column", gap: 10, zIndex: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>
-              QUESTION {currentQ + 1} / {questions.length}
+              {t("questionLabel", { current: currentQ + 1, total: questions.length })}
             </span>
             {timeLeft !== null && (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span aria-hidden="true" style={{ fontSize: 14 }}>⏱</span>
                 <span
-                  aria-label={`Time remaining: ${fmt(timeLeft)}`}
+                  aria-label={tCommon("timer", { minutes: Math.floor(timeLeft / 60), seconds: (timeLeft % 60).toString().padStart(2, "0") })}
                   style={{ fontFamily: "var(--q-mono)", fontSize: 16, fontWeight: 600, color: timeLeft < 60 ? "var(--q-coral)" : "var(--q-ink)" }}
                 >
                   {fmt(timeLeft)}
@@ -303,7 +306,7 @@ export default function PlayPage() {
         {/* body */}
         <div style={{ flex: 1, padding: "20px 20px 0", display: "flex", flexDirection: "column", gap: 16 }}>
           {q.type === "MULTIPLE" && (
-            <span className="q-chip q-chip-yellow" style={{ alignSelf: "flex-start", fontSize: 11 }}>SELECT ALL THAT APPLY</span>
+            <span className="q-chip q-chip-yellow" style={{ alignSelf: "flex-start", fontSize: 11 }}>{t("selectAllThatApply")}</span>
           )}
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 26, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
             {q.text}
@@ -370,16 +373,16 @@ export default function PlayPage() {
           <button className="q-btn q-btn-sm" disabled={currentQ === 0} onClick={() => setCurrentQ((p) => p - 1)}>←</button>
           {currentQ < questions.length - 1 ? (
             <button className="q-btn q-btn-primary" style={{ flex: 1 }} onClick={() => setCurrentQ((p) => p + 1)}>
-              Next →
+              {t("next")} →
             </button>
           ) : (
             <button className="q-btn q-btn-primary" style={{ flex: 1 }} onClick={() => { submitPromiseRef.current = handleSubmit(); }} disabled={submitted}>
-              {answeredCount < questions.length ? `Submit (${answeredCount}/${questions.length} answered)` : "Submit quiz ✓"}
+              {answeredCount < questions.length ? t("submitPartiallyAnswered", { answered: answeredCount, total: questions.length }) : t("submitQuiz")}
             </button>
           )}
           {currentQ < questions.length - 1 && (
             <button className="q-btn q-btn-coral q-btn-sm" onClick={() => { submitPromiseRef.current = handleSubmit(); }} disabled={submitted}>
-              Submit
+              {t("submit")}
             </button>
           )}
         </div>
@@ -393,13 +396,13 @@ export default function PlayPage() {
       <div style={{ minHeight: "100vh", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: 24, textAlign: "center" }}>
         <div aria-hidden="true" style={{ fontSize: 56 }}>🎉</div>
         <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 36, letterSpacing: "-0.025em", lineHeight: 1.05 }}>
-          Nice work,<br />{studentName}.
+          {t("niceWork", { name: studentName })}
         </div>
         <div className="q-card" style={{ padding: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "var(--q-bg)" }}>
-          <span className="q-eyebrow">Results unlock when timer ends</span>
+          <span className="q-eyebrow">{t("resultsUnlockWhenTimerEnds")}</span>
         </div>
         <p style={{ fontSize: 15, color: "var(--q-ink-2)", maxWidth: 280, margin: 0, lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>
-          Your answers are in. Results appear when the whole class is done.
+          {t("answersAreIn")}
         </p>
       </div>
     );
@@ -407,25 +410,25 @@ export default function PlayPage() {
 
   // ─── Results ───
   if (phase === "results" && results) {
+    const feedbackKey = results.percentage >= 80 ? "scoreFeedbackExcellent" : results.percentage >= 60 ? "scoreFeedbackWellDone" : "scoreFeedbackKeepGoing";
     return (
       <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--q-bg)" }}>
         {/* score header */}
         <div style={{ background: "var(--q-yellow)", padding: "28px 24px 20px", position: "relative", overflow: "hidden", textAlign: "center", borderBottom: "1.5px solid var(--q-line)" }}>
           <div style={{ position: "absolute", top: -60, left: -60, width: 200, height: 200, opacity: 0.25 }} className="q-spike" />
-          <span className="q-eyebrow" style={{ position: "relative" }}>Your score</span>
+          <span className="q-eyebrow" style={{ position: "relative" }}>{t("yourScore")}</span>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "clamp(52px, 16vw, 80px)", lineHeight: 1, position: "relative" }}>
             {results.score}<span style={{ fontSize: 36, color: "var(--q-ink-3)" }}>/{results.total}</span>
           </div>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 20, position: "relative" }}>
-            {results.percentage}%
-            {results.percentage >= 80 ? " — excellent!" : results.percentage >= 60 ? " — well done!" : " — keep going!"}
+            {t(feedbackKey, { percentage: results.percentage })}
           </div>
           <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 10, position: "relative" }}>
             <span className="q-chip" style={{ background: "var(--q-bg)", fontSize: 11 }}>
-              {results.score}/{results.total} correct
+              {t("correctCount", { score: results.score, total: results.total })}
             </span>
             <span className="q-chip" style={{ background: "var(--q-bg)", fontSize: 11 }}>
-              #{results.rank} of {results.totalParticipants}
+              {t("rankOf", { rank: results.rank, total: results.totalParticipants })}
             </span>
           </div>
         </div>
@@ -433,7 +436,7 @@ export default function PlayPage() {
         {/* leaderboard */}
         {results.top3.length > 0 && (
           <div style={{ padding: "16px 20px 0" }}>
-            <span className="q-eyebrow" style={{ display: "block", marginBottom: 8 }}>Leaderboard</span>
+            <span className="q-eyebrow" style={{ display: "block", marginBottom: 8 }}>{t("leaderboard")}</span>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {results.top3.map((s, i) => {
                 const isMe = s.name === studentName && i + 1 === results.rank;
@@ -449,7 +452,7 @@ export default function PlayPage() {
                     }}
                   >
                     <span style={{ fontSize: 18, flexShrink: 0 }}>{medals[i]}</span>
-                    <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 15, flex: 1 }}>{s.name}{isMe ? " (you)" : ""}</span>
+                    <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 15, flex: 1 }}>{s.name}{isMe ? ` ${t("you")}` : ""}</span>
                     <span style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{s.score}/{s.total}</span>
                   </div>
                 );
@@ -457,7 +460,7 @@ export default function PlayPage() {
               {results.rank > 3 && (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "var(--q-ink)", color: "var(--q-bg)", borderRadius: 10, border: "1.5px solid var(--q-ink)" }}>
                   <span style={{ fontFamily: "var(--q-mono)", fontSize: 14, flexShrink: 0 }}>#{results.rank}</span>
-                  <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 15, flex: 1 }}>{studentName} (you)</span>
+                  <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 15, flex: 1 }}>{studentName} {t("you")}</span>
                   <span style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{results.score}/{results.total}</span>
                 </div>
               )}
@@ -468,7 +471,7 @@ export default function PlayPage() {
         {/* answer review */}
         <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", gap: 12, overflow: "auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span className="q-eyebrow">Answer review</span>
+            <span className="q-eyebrow">{t("answerReview")}</span>
             <div aria-label={`${results.questions.filter(q => q.isCorrect).length} correct, ${results.questions.filter(q => !q.isCorrect).length} wrong`} style={{ display: "flex", gap: 3 }}>
               {results.questions.map((q, i) => (
                 <span key={i} aria-hidden="true" style={{ width: 14, height: 14, borderRadius: 3, background: q.isCorrect ? "var(--q-green)" : "var(--q-coral)" }} />
@@ -495,10 +498,10 @@ export default function PlayPage() {
                     color: "#fff", fontSize: 11, borderColor: "var(--q-ink)",
                   }}
                 >
-                  {q.isCorrect ? "✓ correct" : "✗ wrong"}
+                  {q.isCorrect ? t("correctBadge") : t("wrongBadge")}
                 </span>
                 <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, color: "var(--q-ink-3)" }}>Q{qi + 1}</span>
-                {q.type === "MULTIPLE" && <span className="q-chip" style={{ fontSize: 10, background: "var(--q-bg)" }}>multiple</span>}
+                {q.type === "MULTIPLE" && <span className="q-chip" style={{ fontSize: 10, background: "var(--q-bg)" }}>{t("multiple")}</span>}
               </div>
               <div style={{ fontWeight: 600, fontSize: 15, fontFamily: "var(--q-sans)" }}>{q.text}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -527,7 +530,7 @@ export default function PlayPage() {
         </div>
 
         <div style={{ padding: 16, borderTop: "1px solid var(--q-line-2)", display: "flex", justifyContent: "center" }}>
-          <button className="q-btn" onClick={() => window.location.href = "/"}>Done</button>
+          <button className="q-btn" onClick={() => window.location.href = "/"}>{t("done")}</button>
         </div>
       </div>
     );
@@ -535,7 +538,7 @@ export default function PlayPage() {
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-      <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>Loading…</div>
+      <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>{t("loading")}</div>
     </div>
   );
 }
