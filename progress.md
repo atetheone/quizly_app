@@ -120,7 +120,7 @@
 - [x] PR2: French quiz generation + generate/import error keys + localized import page
   - [x] PR3: landing + auth pages
   - [x] PR4: dashboard + date/plural formatting
-- [ ] PR5: quiz editor (new + edit)
+  - [x] PR5: quiz editor (new + edit)
 - [ ] PR6: join + join/[code]
 - [ ] PR7: play/[code] + timer/score formatting
 - [ ] PR8: session/[code] + final stray-string sweep
@@ -190,3 +190,4 @@
 | 2026-05-18 | 10 | i18n PR2: French quiz generation + import page localized (issue #12) |
 | 2026-05-18 | 10 | i18n PR3: landing + auth pages localized (issue #14) |
 | 2026-05-18 | 10 | i18n PR4: dashboard + locale-aware dates localized (issue #16) |
+| 2026-05-18 | 10 | i18n PR5: quiz editor (new + edit) localized (issue #18) |
