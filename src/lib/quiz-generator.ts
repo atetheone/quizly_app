@@ -13,6 +13,11 @@ import type { QuizGenerateInput } from "@/lib/validations";
 const MODEL =
   process.env.QUIZ_GEN_MODEL || "meta-llama/llama-3.3-70b-instruct:free";
 
+/**
+ * Carries an i18n message key (resolved client-side via the `errors`
+ * namespace), not user-facing prose — the generate route returns
+ * `error.message` verbatim and the client translates it.
+ */
 export class QuizGenerationError extends Error {}
 
 let client: OpenAI | null = null;
@@ -20,9 +25,7 @@ let client: OpenAI | null = null;
 function getClient(): OpenAI {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    throw new QuizGenerationError(
-      "AI generation is not configured. Set OPENROUTER_API_KEY (free at openrouter.ai)."
-    );
+    throw new QuizGenerationError("errors.genNotConfigured");
   }
   if (!client) {
     client = new OpenAI({
@@ -46,7 +49,7 @@ RULES:
 - Each question has between 2 and 6 options, labelled A), B), C)… in order.
 - Single-answer question: mark EXACTLY ONE option with " (correct)" at the end of its line.
 - Multiple-answer question: append " (select all that apply)" to the "Question:" line AND mark EVERY correct option with " (correct)". Use these sparingly.
-- The literal token is "(correct)" — never translate or restyle it.
+- The structural tokens "Question:", "(correct)" and "(select all that apply)" are ALWAYS in English exactly as written — never translate or restyle them, regardless of the language of the question content.
 - Never put "(correct)" anywhere except at the end of an option line.
 - Produce the EXACT number of questions requested. No more, no less.
 - Vary the position of the correct option across questions.
@@ -56,11 +59,27 @@ DIFFICULTY CALIBRATION:
 - MEDIUM: requires understanding/applying a concept or combining two facts; plausible distractors.
 - HARD: multi-step reasoning, fine distinctions, or less commonly known specifics; subtle distractors.`;
 
+const LANGUAGE_NAMES: Record<QuizGenerateInput["language"], string> = {
+  en: "English",
+  fr: "French",
+};
+
+/**
+ * Instruction to write quiz CONTENT in the target language while keeping the
+ * structural tokens English (so `parseQuizText` stays unchanged).
+ */
+function languageDirective(language: QuizGenerateInput["language"]): string {
+  if (language === "en") return "";
+  const name = LANGUAGE_NAMES[language];
+  return `\nWrite every question text and every answer option in ${name}. Keep the structural tokens "Question:", "(correct)" and "(select all that apply)" exactly in English.`;
+}
+
 function buildUserPrompt(input: QuizGenerateInput): string {
-  const { topic, count, spread } = input;
+  const { topic, count, spread, language } = input;
+  const lang = languageDirective(language);
   if (spread.kind === "single") {
     return `Topic: ${topic}
-Generate exactly ${count} question(s), ALL at ${spread.level} difficulty.`;
+Generate exactly ${count} question(s), ALL at ${spread.level} difficulty.${lang}`;
   }
   const parts: string[] = [];
   if (spread.easy > 0) parts.push(`${spread.easy} EASY`);
@@ -70,7 +89,7 @@ Generate exactly ${count} question(s), ALL at ${spread.level} difficulty.`;
 Generate exactly ${count} question(s) with this difficulty mix: ${parts.join(
     ", "
   )}.
-Interleave the difficulties rather than grouping them.`;
+Interleave the difficulties rather than grouping them.${lang}`;
 }
 
 /** Strips markdown fences free models sometimes wrap output in. */
@@ -97,23 +116,17 @@ export async function generateQuizText(
   } catch (err: unknown) {
     const status = (err as { status?: number })?.status;
     if (status === 429) {
-      throw new QuizGenerationError(
-        "AI rate limit reached on the free tier. Try again in a moment."
-      );
+      throw new QuizGenerationError("errors.genRateLimit");
     }
     if (status === 401 || status === 403) {
-      throw new QuizGenerationError(
-        "AI generation rejected the API key. Check OPENROUTER_API_KEY."
-      );
+      throw new QuizGenerationError("errors.genBadKey");
     }
-    throw new QuizGenerationError(
-      "AI generation is temporarily unavailable. Try again shortly."
-    );
+    throw new QuizGenerationError("errors.genUnavailable");
   }
 
   const raw = completion.choices[0]?.message?.content;
   if (!raw || !raw.trim()) {
-    throw new QuizGenerationError("AI returned an empty response.");
+    throw new QuizGenerationError("errors.genEmpty");
   }
   return stripFences(raw);
 }
