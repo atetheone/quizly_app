@@ -195,6 +195,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/quiz/import?generate=1" className="q-btn q-btn-sm">✨ Generate</Link>
             <Link href="/quiz/import" className="q-btn q-btn-sm">Import from text</Link>
             <Link href="/quiz/new" className="q-btn q-btn-primary q-btn-sm">＋ New quiz</Link>
           </div>
@@ -266,7 +267,10 @@ export default function DashboardPage() {
             <div style={{ color: "var(--q-ink-3)", fontSize: 15, fontFamily: "var(--q-sans)" }}>
               Create your first quiz and run a live session.
             </div>
-            <Link href="/quiz/new" className="q-btn q-btn-primary q-btn-lg">＋ Create a quiz</Link>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Link href="/quiz/import?generate=1" className="q-btn q-btn-lg">✨ Generate with AI</Link>
+              <Link href="/quiz/new" className="q-btn q-btn-primary q-btn-lg">＋ Create a quiz</Link>
+            </div>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
