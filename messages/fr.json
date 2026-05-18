@@ -228,5 +228,20 @@
     "createFailed": "Échec de la création du quiz",
     "quizUpdated": "Quiz mis à jour !",
     "updateFailed": "Échec de la mise à jour du quiz"
+  },
+  "join": {
+    "stepIndicator": "Étape {current} sur {total}",
+    "headline": "Quel est le code ?",
+    "subtitle": "Votre enseignant le projettera au tableau.",
+    "roomCodeLabel": "Code de la salle",
+    "roomCodePlaceholder": "A3F7K2",
+    "yourNameLabel": "Votre nom",
+    "yourNamePlaceholder": "Entrez votre nom",
+    "joining": "Connexion…",
+    "joinQuiz": "Rejoindre le quiz",
+    "dividerOr": "ou",
+    "scanQR": "Scanner le QR code",
+    "failedToJoin": "Échec de la connexion",
+    "joinQuizTitle": "Rejoindre le quiz"
   }
 }

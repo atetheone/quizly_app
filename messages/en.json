@@ -228,5 +228,20 @@
     "createFailed": "Failed to create quiz",
     "quizUpdated": "Quiz updated!",
     "updateFailed": "Failed to update quiz"
+  },
+  "join": {
+    "stepIndicator": "Step {current} of {total}",
+    "headline": "What's the code?",
+    "subtitle": "Your teacher will project it on the board.",
+    "roomCodeLabel": "Room code",
+    "roomCodePlaceholder": "A3F7K2",
+    "yourNameLabel": "Your name",
+    "yourNamePlaceholder": "Enter your name",
+    "joining": "Joining…",
+    "joinQuiz": "Join quiz",
+    "dividerOr": "or",
+    "scanQR": "Scan QR code",
+    "failedToJoin": "Failed to join",
+    "joinQuizTitle": "Join quiz"
   }
 }
