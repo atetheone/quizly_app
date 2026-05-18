@@ -26,7 +26,7 @@
 - [x] Create quiz — structured text import (`/quiz/import`)
   - [x] Text area with format instructions
   - [x] Parser for structured text format
-  - [ ] Preview parsed questions before saving
+  - [x] Preview parsed questions before saving (live preview)
 - [x] Edit quiz page (`/quiz/[id]/edit`)
 - [x] Delete quiz with confirmation dialog
 - [x] API routes: CRUD for quizzes
@@ -104,6 +104,15 @@
 - [x] Dashboard card UI — show Duplicate as secondary action on unlocked quizzes
 - [x] Delete quiz confirmation dialog — warn that all session results will also be deleted (cascade)
 
+### Phase 9: AI Quiz Generation
+- [x] `quizGenerateSchema` validation for topic + difficulty input
+- [x] `quiz-generator` module — OpenRouter free tier (`src/lib/quiz-generator.ts`)
+- [x] `POST /api/quizzes/generate` route
+- [x] Generate-with-AI panel on import page (`/quiz/import`)
+- [x] Generate entry points on dashboard
+- [x] `OPENROUTER_API_KEY` + `QUIZ_GEN_MODEL` env vars documented
+- [ ] Production OpenRouter key configured
+
 ### Phase 7: Polish & Deployment
 - [x] Docker Compose for PostgreSQL (postgres:16-alpine)
 - [x] Environment variable setup for dev (.env)
@@ -163,3 +172,5 @@
 | 2026-04-30 | 7 | Docker Compose for PostgreSQL set up |
 | 2026-04-30 | 7 | Prisma migration applied to Docker database |
 | 2026-04-30 | — | Build passes (`npm run build` succeeds) |
+| 2026-05-18 | 2 | Import preview implemented (live preview of parsed questions) |
+| 2026-05-18 | 9 | AI quiz generation (topic + difficulty) merged to `main` via PR |
