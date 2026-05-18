@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { toast } from "sonner";
+import { useTranslations, useFormatter } from "next-intl";
 import { QLogo, QAvatar } from "@/components/q-ui";
 
 type QuizListItem = {
@@ -35,20 +36,23 @@ function quizColor(id: string) { return COLORS[id.charCodeAt(0) % COLORS.length]
 function quizEmoji(title: string) { return EMOJIS[title.charCodeAt(0) % EMOJIS.length]; }
 
 type NavTab = "quizzes" | "sessions";
-const navItems: { i: string; t: string; tab: NavTab }[] = [
-  { i: "▦", t: "Quizzes", tab: "quizzes" },
-  { i: "↻", t: "Past sessions", tab: "sessions" },
-];
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslations("dashboard");
+  const format = useFormatter();
   const [tab, setTab] = useState<NavTab>("quizzes");
   const [quizzes, setQuizzes] = useState<QuizListItem[]>([]);
   const [pastSessions, setPastSessions] = useState<PastSession[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState<string | null>(null);
   const [duplicating, setDuplicating] = useState<string | null>(null);
+
+  const navItems: { i: string; tab: NavTab }[] = [
+    { i: "▦", tab: "quizzes" },
+    { i: "↻", tab: "sessions" },
+  ];
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/auth/login");
@@ -71,15 +75,15 @@ export default function DashboardPage() {
 
   async function handleDelete(quiz: QuizListItem) {
     const warning = quiz.isLocked
-      ? "This quiz has session results. Deleting it will permanently remove all associated results.\n\nDelete anyway?"
-      : "Delete this quiz?";
+      ? t("deleteWarningLocked")
+      : t("deleteWarning");
     if (!confirm(warning)) return;
     const res = await fetch(`/api/quizzes/${quiz.id}`, { method: "DELETE" });
     if (res.ok) {
       setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
     } else {
       const d = await res.json().catch(() => ({}));
-      toast.error(d.error || "Failed to delete quiz");
+      toast.error(d.error || t("toastDeleteFailed"));
     }
   }
 
@@ -101,10 +105,10 @@ export default function DashboardPage() {
         },
         ...prev,
       ]);
-      toast.success("Quiz duplicated");
+      toast.success(t("toastDuplicated"));
     } else {
       const d = await res.json().catch(() => ({}));
-      toast.error(d.error || "Failed to duplicate quiz");
+      toast.error(d.error || t("toastDuplicateFailed"));
     }
   }
 
@@ -121,21 +125,23 @@ export default function DashboardPage() {
     } else {
       setStarting(null);
       const d = await res.json().catch(() => ({}));
-      toast.error(d.error || "Failed to start session");
+      toast.error(d.error || t("toastStartFailed"));
     }
   }
 
   if (status === "loading" || loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--q-bg)" }}>
-        <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>Loading…</div>
+        <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>{t("loading")}</div>
       </div>
     );
   }
   if (!session) return null;
 
   const firstName = session.user?.name?.split(" ")[0] ?? "there";
-  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const hour = new Date().getHours();
+  const greetingKey = hour < 12 ? "greetingMorning" : hour < 18 ? "greetingAfternoon" : "greetingEvening";
+  const today = new Date();
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "var(--q-bg)" }}>
@@ -164,7 +170,7 @@ export default function DashboardPage() {
                 border: "none", textAlign: "left", width: "100%",
               }}
             >
-              <span>{x.i}</span><span>{x.t}</span>
+              <span>{x.i}</span><span>{t(x.tab === "quizzes" ? "navQuizzes" : "navPastSessions")}</span>
             </button>
           ))}
         </nav>
@@ -179,7 +185,7 @@ export default function DashboardPage() {
                 fontSize: 11, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)",
               }}
             >
-              Sign out
+              {t("signOut")}
             </button>
           </div>
         </div>
@@ -189,35 +195,35 @@ export default function DashboardPage() {
       <main style={{ flex: 1, overflow: "auto", padding: 28, display: "flex", flexDirection: "column", gap: 24 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <span className="q-eyebrow">{today}</span>
+            <span className="q-eyebrow">{format.dateTime(today, { weekday: "long", month: "long", day: "numeric" })}</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 40, letterSpacing: "-0.025em", marginTop: 4 }}>
-              Good morning, {firstName}.
+              {t(greetingKey, { name: firstName })}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <Link href="/quiz/import?generate=1" className="q-btn q-btn-sm">✨ Generate</Link>
-            <Link href="/quiz/import" className="q-btn q-btn-sm">Import from text</Link>
-            <Link href="/quiz/new" className="q-btn q-btn-primary q-btn-sm">＋ New quiz</Link>
+            <Link href="/quiz/import?generate=1" className="q-btn q-btn-sm">{t("generate")}</Link>
+            <Link href="/quiz/import" className="q-btn q-btn-sm">{t("importFromText")}</Link>
+            <Link href="/quiz/new" className="q-btn q-btn-primary q-btn-sm">{t("newQuiz")}</Link>
           </div>
         </div>
 
         {tab === "sessions" ? (
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span className="q-eyebrow">Past sessions · {pastSessions?.length ?? "…"}</span>
+              <span className="q-eyebrow">{t("pastSessionsCount", { count: pastSessions?.length ?? 0 })}</span>
             </div>
             {pastSessions === null ? (
-              <div style={{ textAlign: "center", padding: 40, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>Loading…</div>
+              <div style={{ textAlign: "center", padding: 40, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>{t("pastSessionsLoading")}</div>
             ) : pastSessions.length === 0 ? (
               <div className="q-card" style={{ padding: 48, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center" }}>
                 <div style={{ fontSize: 48 }}>📋</div>
-                <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 24 }}>No past sessions</div>
-                <div style={{ color: "var(--q-ink-3)", fontSize: 15, fontFamily: "var(--q-sans)" }}>Run a quiz to see your session history here.</div>
+                <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 24 }}>{t("noPastSessions")}</div>
+                <div style={{ color: "var(--q-ink-3)", fontSize: 15, fontFamily: "var(--q-sans)" }}>{t("noPastSessionsDescription")}</div>
               </div>
             ) : (
               <div className="q-card" style={{ overflow: "hidden" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
-                  <div>Quiz</div><div>Date</div><div>Students</div><div>Avg</div>
+                  <div>{t("tableQuiz")}</div><div>{t("tableDate")}</div><div>{t("tableStudents")}</div><div>{t("tableAvg")}</div>
                 </div>
                 {pastSessions.map((s) => (
                   <Link
@@ -227,7 +233,7 @@ export default function DashboardPage() {
                   >
                     <div style={{ fontFamily: "var(--q-sans)", fontWeight: 600, fontSize: 14 }}>{s.quizTitle}</div>
                     <div style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>
-                      {new Date(s.endedAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+                      {format.dateTime(new Date(s.endedAt), { month: "short", day: "numeric" })}
                     </div>
                     <div style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{s.studentCount}</div>
                     <div>
@@ -251,7 +257,7 @@ export default function DashboardPage() {
           <>
         {/* header row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span className="q-eyebrow">Your quizzes · {quizzes.length}</span>
+          <span className="q-eyebrow">{t("yourQuizzesCount", { count: quizzes.length })}</span>
         </div>
 
         {quizzes.length === 0 ? (
@@ -263,13 +269,13 @@ export default function DashboardPage() {
             }}
           >
             <div style={{ fontSize: 48 }}>📝</div>
-            <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 24 }}>No quizzes yet</div>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 24 }}>{t("noQuizzesYet")}</div>
             <div style={{ color: "var(--q-ink-3)", fontSize: 15, fontFamily: "var(--q-sans)" }}>
-              Create your first quiz and run a live session.
+              {t("noQuizzesDescription")}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <Link href="/quiz/import?generate=1" className="q-btn q-btn-lg">✨ Generate with AI</Link>
-              <Link href="/quiz/new" className="q-btn q-btn-primary q-btn-lg">＋ Create a quiz</Link>
+              <Link href="/quiz/import?generate=1" className="q-btn q-btn-lg">✨ {t("generate")}</Link>
+              <Link href="/quiz/new" className="q-btn q-btn-primary q-btn-lg">{t("createQuiz")}</Link>
             </div>
           </div>
         ) : (
@@ -293,7 +299,7 @@ export default function DashboardPage() {
                         textTransform: "uppercase",
                       }}
                     >
-                      🔒 Locked
+                      {t("lockedBadge")}
                     </span>
                   )}
                 </div>
@@ -302,11 +308,11 @@ export default function DashboardPage() {
                     {quiz.title}
                   </div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <span className="q-chip" style={{ fontSize: 11 }}>{quiz.questionCount} Q</span>
-                    <span className="q-chip" style={{ fontSize: 11 }}>⏱ {quiz.timeLimit}m</span>
+                    <span className="q-chip" style={{ fontSize: 11 }}>{t("questionCountShort", { count: quiz.questionCount })}</span>
+                    <span className="q-chip" style={{ fontSize: 11 }}>{t("timeLimitShort", { minutes: quiz.timeLimit })}</span>
                   </div>
                   <div style={{ fontSize: 13, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>
-                    Updated {new Date(quiz.updatedAt).toLocaleDateString()}
+                    {t("updatedLabel", { date: format.dateTime(new Date(quiz.updatedAt), { dateStyle: "short" }) })}
                   </div>
                   <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
                     <button
@@ -315,7 +321,7 @@ export default function DashboardPage() {
                       onClick={() => handleStartSession(quiz.id)}
                       disabled={starting === quiz.id}
                     >
-                      {starting === quiz.id ? "Starting…" : "▶ Start session"}
+                      {starting === quiz.id ? t("starting") : t("startSession")}
                     </button>
                     {quiz.isLocked ? (
                       <button
@@ -323,22 +329,22 @@ export default function DashboardPage() {
                         onClick={() => handleDuplicate(quiz.id)}
                         disabled={duplicating === quiz.id}
                       >
-                        {duplicating === quiz.id ? "…" : "⧉ Duplicate"}
+                        {duplicating === quiz.id ? "…" : t("duplicate")}
                       </button>
                     ) : (
                       <>
-                        <Link href={`/quiz/${quiz.id}/edit`} className="q-btn q-btn-sm">Edit</Link>
+                        <Link href={`/quiz/${quiz.id}/edit`} className="q-btn q-btn-sm">{t("edit")}</Link>
                         <button
                           className="q-btn q-btn-sm"
                           onClick={() => handleDuplicate(quiz.id)}
                           disabled={duplicating === quiz.id}
                         >
-                          {duplicating === quiz.id ? "…" : "⧉"}
+                          {duplicating === quiz.id ? "…" : t("duplicateShort")}
                         </button>
                       </>
                     )}
                     <button className="q-btn q-btn-sm" style={{ color: "var(--q-coral)", borderColor: "var(--q-coral)" }} onClick={() => handleDelete(quiz)}>
-                      ×
+                      {t("deleteAction")}
                     </button>
                   </div>
                 </div>
