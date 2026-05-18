@@ -107,6 +107,44 @@ npx prisma studio        # Open Prisma database browser
 npx prisma generate      # Regenerate Prisma client
 ```
 
+## Adding a Feature
+
+The conventional flow for a new feature in this codebase (as established by the
+AI quiz generation and session-history features):
+
+1. **Issue first** — every feature starts as a GitHub issue created from the
+   planned scope (see `prd.md`), labeled `enhancement`
+   (`gh issue create`). The implementing PR closes it on merge
+   (`Closes #N`). One issue per feature.
+2. **Branch** — `feat/<kebab-name>` off `main` (e.g. `feat/ai-quiz-generation`).
+3. **Validation first** — add/extend a Zod schema in `src/lib/validations.ts`
+   for any new input shape. API routes validate against these, never trust raw
+   request bodies.
+4. **Domain logic** — put non-trivial logic in a focused module under
+   `src/lib/` (e.g. `quiz-generator.ts`, `grading.ts`). Keep it framework- and
+   request-agnostic so it stays unit-testable.
+5. **API route** — add `src/app/api/<area>/<name>/route.ts`. Auth-gate teacher
+   actions via the NextAuth session; return typed JSON; surface validation
+   errors as 400s. New persisted fields require a Prisma schema change +
+   `npx prisma migrate dev` (migrations are committed).
+6. **UI** — add components under `src/components/<area>/` and wire pages under
+   `src/app/`. Reuse existing shadcn/ui primitives; respect the architecture
+   decisions above (e.g. results gated until timer expiry, students name-only).
+7. **Respect constraints & scope** — honor the limits in *Constraints* and do
+   not build anything listed in *V1 Out of Scope* without a decision to expand
+   scope.
+8. **Commits** — atomic, [Conventional Commits](https://www.conventionalcommits.org)
+   (`feat:`, `fix:`, `docs:`, `chore:`), one logical change each. Mirror the
+   scaffold order above (dep/env → schema → module → route → UI → fixes).
+9. **Gates before PR** — `npm run lint` and `npm run build` must pass; type-check
+   with `npx tsc --noEmit`. Update `progress.md` (phase checklist + status log)
+   and any affected docs/env examples.
+10. **PR → `main`** — open a PR that closes the issue; merge keeps history (no
+    squash). After merge, delete the merged branch and prune stale remotes.
+
+> Next.js here may diverge from training data — see `AGENTS.md`; consult
+> `node_modules/next/dist/docs/` before writing framework code.
+
 ## V1 Out of Scope
 
 - Student accounts/authentication
