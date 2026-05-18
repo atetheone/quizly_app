@@ -9,6 +9,7 @@ import Pusher from "pusher-js";
 import { isPusherConfigured } from "@/lib/use-pusher";
 import { QAvatar, QLogo } from "@/components/q-ui";
 import { toast } from "sonner";
+import { useTranslations, useFormatter } from "next-intl";
 
 type Student = {
   id: string;
@@ -31,6 +32,7 @@ export default function SessionPage() {
   const router = useRouter();
   const params = useParams();
   const code = params.code as string;
+  const t = useTranslations("session");
   const [info, setInfo] = useState<SessionInfo | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -88,7 +90,6 @@ export default function SessionPage() {
       setTimeLeft(rem);
       if (rem <= 0) {
         clearInterval(iv);
-        // End the session server-side so students are notified and can fetch results
         fetch(`/api/sessions/${code}/end`, { method: "POST" }).catch(() => {});
       }
     }, 1000);
@@ -104,7 +105,7 @@ export default function SessionPage() {
       fetchStudents();
     } else {
       const d = await r.json().catch(() => ({}));
-      toast.error(d.error || "Failed to start quiz");
+      toast.error(d.error || t("failedToStart"));
     }
   }
   async function handleEnd() {
@@ -116,14 +117,14 @@ export default function SessionPage() {
       setTimeLeft(null);
     } else {
       const d = await r.json().catch(() => ({}));
-      toast.error(d.error || "Failed to end session");
+      toast.error(d.error || t("failedToEnd"));
     }
   }
 
   if (!info) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--q-bg)" }}>
-        <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>Loading…</div>
+        <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>{t("loading")}</div>
       </div>
     );
   }
@@ -134,6 +135,8 @@ export default function SessionPage() {
 }
 
 function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { info: SessionInfo; students: Student[]; qrCodeUrl: string; code: string; onStart: () => void; starting: boolean }) {
+  const t = useTranslations("session");
+  const tCommon = useTranslations("common");
   const joinUrl = typeof window !== "undefined" ? `${window.location.origin}/join/${code}` : `/join/${code}`;
   return (
     <div className="q-lobby-split" style={{ display: "flex", height: "100vh", background: "var(--q-bg)" }}>
@@ -144,14 +147,14 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { inf
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--q-yellow)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--q-display)", fontWeight: 800, fontSize: 18, color: "var(--q-ink)" }}>Q</div>
             <span style={{ fontWeight: 600, fontSize: 16, fontFamily: "var(--q-sans)" }}>{info.quizTitle}</span>
-            <span className="q-chip q-chip-yellow" style={{ fontSize: 11, color: "var(--q-ink)" }}>LOBBY</span>
+            <span className="q-chip q-chip-yellow" style={{ fontSize: 11, color: "var(--q-ink)" }}>{t("badgeLobby")}</span>
           </div>
-          <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>{info.timeLimit} min</span>
+          <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>{t("timeLimitUnit", { minutes: info.timeLimit })}</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, position: "relative", textAlign: "center" }}>
           <div className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>
-            Join at <span style={{ color: "var(--q-yellow)" }}>quizly.app/join</span>
+            {t("joinAt")} <span style={{ color: "var(--q-yellow)" }}>quizly.app/join</span>
           </div>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: "clamp(80px, 14vw, 160px)", lineHeight: 0.9, letterSpacing: "0.04em" }}>
             <span style={{ background: "var(--q-yellow)", color: "var(--q-ink)", padding: "0 14px", borderRadius: 16, border: "3px solid var(--q-yellow)" }}>
@@ -163,14 +166,14 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { inf
               <img src={qrCodeUrl} alt="QR" style={{ width: 100, height: 100, borderRadius: 10, border: "2px solid rgba(255,255,255,0.2)" }} />
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8, textAlign: "left" }}>
-              <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>Or scan</span>
+              <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>{t("orScan")}</span>
               <span style={{ fontFamily: "var(--q-mono)", fontSize: 14 }}>{joinUrl}</span>
               <button
                 className="q-btn q-btn-sm q-btn-yellow"
                 onClick={() => navigator.clipboard?.writeText(joinUrl)}
                 style={{ alignSelf: "flex-start" }}
               >
-                📋 Copy link
+                📋 {t("copyLink")}
               </button>
             </div>
           </div>
@@ -180,7 +183,7 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { inf
           <div className="q-bar" style={{ flex: 1, background: "rgba(255,255,255,0.15)", borderColor: "rgba(255,255,255,0.3)" }}>
             <span className="q-bar-fill" style={{ width: students.length > 0 ? "60%" : "0%", background: "var(--q-yellow)" }} />
           </div>
-          <span style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{students.length} here · waiting for more</span>
+          <span style={{ fontFamily: "var(--q-mono)", fontSize: 13 }}>{t("studentsHereWaiting", { count: students.length })}</span>
         </div>
       </div>
 
@@ -188,13 +191,13 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { inf
       <div style={{ flex: 1, padding: 28, display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <span className="q-eyebrow">In the lobby</span>
+            <span className="q-eyebrow">{t("inTheLobby")}</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 28, letterSpacing: "-0.02em", marginTop: 2 }}>
-              {students.length} students
+              {tCommon("studentCount", { count: students.length })}
             </div>
           </div>
           <button className="q-btn q-btn-coral q-btn-lg" onClick={onStart} disabled={students.length === 0 || starting}>
-            {starting ? "Starting…" : "▶ Start quiz"}
+            {starting ? t("starting") : `▶ ${t("startQuiz")}`}
           </button>
         </div>
 
@@ -202,7 +205,7 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { inf
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div style={{ textAlign: "center", color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>👀</div>
-              Waiting for students to join…
+              {t("waitingForStudents")}
             </div>
           </div>
         ) : (
@@ -211,7 +214,7 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { inf
               <div key={s.id} className="q-card" style={{ padding: 10, display: "flex", alignItems: "center", gap: 10, boxShadow: "none" }}>
                 <QAvatar name={s.name} size={32} />
                 <span style={{ fontWeight: 600, fontSize: 14, fontFamily: "var(--q-sans)" }}>{s.name}</span>
-                <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, marginLeft: "auto", color: "var(--q-ink-3)" }}>{i < 4 ? "now" : "1m"}</span>
+                <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, marginLeft: "auto", color: "var(--q-ink-3)" }}>{i < 4 ? t("joinedNow") : t("joinedMinAgo")}</span>
               </div>
             ))}
           </div>
@@ -219,7 +222,7 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { inf
 
         <div className="q-card" style={{ padding: 12, background: "var(--q-yellow-soft)", borderColor: "var(--q-yellow)" }}>
           <div style={{ fontSize: 14, fontFamily: "var(--q-sans)" }}>
-            <b>Heads up:</b> once you start, late joiners will be locked out.
+            <b>{t("headsUp")}</b>
           </div>
         </div>
       </div>
@@ -228,12 +231,13 @@ function LobbyView({ info, students, qrCodeUrl, code, onStart, starting }: { inf
 }
 
 function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: SessionInfo; students: Student[]; timeLeft: number | null; code: string; onEnd: () => void; ending: boolean }) {
+  const t = useTranslations("session");
   const total = info.timeLimit * 60;
   const answered = students.reduce((s, st) => s + st.questionsAnswered, 0);
   const maxAnswers = students.length * (students[0]?.totalQuestions || 1);
   const classPct = maxAnswers > 0 ? Math.round((answered / maxAnswers) * 100) : 0;
-  const submitted = students.filter((s) => s.hasSubmitted).length;
-  const active = students.filter((s) => !s.hasSubmitted).length;
+  const submittedCount = students.filter((s) => s.hasSubmitted).length;
+  const activeCount = students.filter((s) => !s.hasSubmitted).length;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "var(--q-bg)", overflow: "hidden" }}>
@@ -242,17 +246,17 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className="q-dot q-dot-live" />
-            <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>LIVE</span>
+            <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>{t("badgeLive")}</span>
           </div>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22 }}>{info.quizTitle}</div>
           <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>
-            code <b style={{ color: "var(--q-ink)" }}>{code}</b>
+            {t("codeLabel")} <b style={{ color: "var(--q-ink)" }}>{code}</b>
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {timeLeft !== null && (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="q-eyebrow">Time left</span>
+              <span className="q-eyebrow">{t("timeLeftLabel")}</span>
               <div
                 style={{
                   fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 36,
@@ -266,7 +270,7 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
             </div>
           )}
           <button className="q-btn q-btn-coral q-btn-sm" onClick={onEnd} disabled={ending}>
-            {ending ? "Ending…" : "End now"}
+            {ending ? t("ending") : t("endNow")}
           </button>
         </div>
       </div>
@@ -275,7 +279,7 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
         {/* left rail: aggregate */}
         <div className="q-live-rail" style={{ width: 300, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", padding: 20, gap: 16, overflow: "auto", flexShrink: 0 }}>
           <div className="q-card" style={{ background: "var(--q-ink)", color: "var(--q-bg)", borderColor: "var(--q-line)", padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
-            <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>Class progress</span>
+            <span className="q-eyebrow" style={{ color: "rgba(255,255,255,0.6)" }}>{t("classProgress")}</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 56 }}>
               {classPct}<span style={{ fontSize: 24, color: "var(--q-yellow)" }}>%</span>
             </div>
@@ -283,18 +287,18 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
               <span className="q-bar-fill" style={{ width: `${classPct}%`, background: "var(--q-yellow)" }} />
             </div>
             <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontFamily: "var(--q-sans)" }}>
-              {answered} of {maxAnswers} answers in
+              {t("answersIn", { answered, max: maxAnswers })}
             </span>
           </div>
 
           <div style={{ display: "flex", gap: 8 }}>
             <div className="q-card" style={{ flex: 1, padding: 12, background: "var(--q-green-soft)", display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 32 }}>{submitted}</div>
-              <span className="q-eyebrow">Submitted</span>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 32 }}>{submittedCount}</div>
+              <span className="q-eyebrow">{t("submitted")}</span>
             </div>
             <div className="q-card" style={{ flex: 1, padding: 12, background: "var(--q-yellow)", display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 32 }}>{active}</div>
-              <span className="q-eyebrow">In progress</span>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 32 }}>{activeCount}</div>
+              <span className="q-eyebrow">{t("inProgress")}</span>
             </div>
           </div>
         </div>
@@ -303,8 +307,8 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
         <div style={{ flex: 1, padding: 20, overflow: "hidden", display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
-              <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 28, letterSpacing: "-0.02em" }}>Students</div>
-              <span style={{ fontFamily: "var(--q-mono)", fontSize: 13, color: "var(--q-ink-3)" }}>{students.length} connected</span>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 28, letterSpacing: "-0.02em" }}>{t("studentsTitle")}</div>
+              <span style={{ fontFamily: "var(--q-mono)", fontSize: 13, color: "var(--q-ink-3)" }}>{t("connectedCount", { count: students.length })}</span>
             </div>
           </div>
 
@@ -312,21 +316,20 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
             {[...students].sort((a, b) => b.questionsAnswered - a.questionsAnswered).map((s) => {
               const done = s.hasSubmitted;
               const pct = s.totalQuestions > 0 ? (s.questionsAnswered / s.totalQuestions) * 100 : 0;
-              const bg = done ? "var(--q-green-soft)" : "var(--q-bg)";
               const bar = done ? "var(--q-green)" : "var(--q-indigo)";
               const total = s.totalQuestions || 12;
               return (
-                <div key={s.id} className="q-card" style={{ background: bg, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                <div key={s.id} className="q-card" style={{ background: done ? "var(--q-green-soft)" : "var(--q-bg)", padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <QAvatar name={s.name} size={36} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 18 }}>{s.name}</div>
                       <div style={{ fontSize: 12, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>
-                        {done ? "submitted" : `on Q${s.questionsAnswered + 1}`}
+                        {done ? t("statusSubmitted") : t("onQuestion", { n: s.questionsAnswered + 1 })}
                       </div>
                     </div>
                     <span className="q-chip" style={{ fontSize: 10, background: "var(--q-bg)" }}>
-                      {done ? "✓ done" : "answering…"}
+                      {done ? `✓ ${t("statusDone")}` : t("statusAnswering")}
                     </span>
                   </div>
                   <div className="q-bar q-bar-thin">
@@ -334,7 +337,7 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, color: "var(--q-ink-3)" }}>
-                      {s.questionsAnswered}/{total} answered
+                      {t("answeredCount", { answered: s.questionsAnswered, total })}
                     </span>
                     <div style={{ display: "flex", gap: 2 }}>
                       {Array.from({ length: total }).map((_, k) => (
@@ -359,6 +362,8 @@ type BreakdownQuestion = {
 type Breakdown = { totalStudents: number; questions: BreakdownQuestion[] };
 
 function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
+  const t = useTranslations("session");
+  const format = useFormatter();
   const [results, setResults] = useState<Results | null>(null);
   const [breakdown, setBreakdown] = useState<Breakdown | null>(null);
   const [tab, setTab] = useState<"students" | "questions">("students");
@@ -373,7 +378,7 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
   if (!results) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-        <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>Loading results…</div>
+        <div style={{ fontFamily: "var(--q-display)", fontSize: 24, color: "var(--q-ink-3)" }}>{t("loadingResults")}</div>
       </div>
     );
   }
@@ -386,13 +391,13 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "var(--q-bg)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px", borderBottom: "1px solid var(--q-line-2)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span className="q-chip q-chip-green" style={{ fontSize: 11 }}>✓ ENDED</span>
+          <span className="q-chip q-chip-green" style={{ fontSize: 11 }}>✓ {t("badgeEnded")}</span>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22 }}>
-            {results.quizTitle} — Results
+            {t("resultsTitle", { title: results.quizTitle })}
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="q-btn q-btn-sm" onClick={onBack}>Back to dashboard</button>
+          <button className="q-btn q-btn-sm" onClick={onBack}>{t("backToDashboard")}</button>
         </div>
       </div>
 
@@ -400,11 +405,11 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
         {/* hero stats */}
         <div className="q-report-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           <div className="q-card" style={{ padding: 20, background: "var(--q-yellow)", display: "flex", flexDirection: "column", gap: 6 }}>
-            <span className="q-eyebrow">Class average</span>
+            <span className="q-eyebrow">{t("classAverage")}</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 64 }}>{results.average}<span style={{ fontSize: 28 }}>%</span></div>
           </div>
           <div className="q-card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
-            <span className="q-eyebrow" style={{ color: "var(--q-green)" }}>↑ Highest</span>
+            <span className="q-eyebrow" style={{ color: "var(--q-green)" }}>↑ {t("highest")}</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 52 }}>{results.highest}%</div>
             <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
               {top.map((s) => <QAvatar key={s.studentId} name={s.name} size={24} />)}
@@ -412,36 +417,36 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
             </div>
           </div>
           <div className="q-card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
-            <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>↓ Lowest</span>
+            <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>↓ {t("lowest")}</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 52 }}>{results.lowest}%</div>
             <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
               {bottom.slice(0, 2).map((s) => <QAvatar key={s.studentId} name={s.name} size={24} />)}
             </div>
           </div>
           <div className="q-card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
-            <span className="q-eyebrow">Submitted</span>
+            <span className="q-eyebrow">{t("submittedLabel")}</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 52 }}>
               {results.students.length}/{results.students.length}
             </div>
-            <span style={{ fontSize: 13, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>100% participation</span>
+            <span style={{ fontSize: 13, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>{t("participationRate", { pct: 100 })}</span>
           </div>
         </div>
 
         {/* tab switcher */}
         <div style={{ display: "flex", gap: 4, borderBottom: "1.5px solid var(--q-line-2)", paddingBottom: 0 }}>
-          {(["students", "questions"] as const).map((t) => (
+          {(["students", "questions"] as const).map((tabKey) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabKey}
+              onClick={() => setTab(tabKey)}
               style={{
                 padding: "8px 16px", fontFamily: "var(--q-sans)", fontWeight: 600, fontSize: 14,
                 background: "none", border: "none", cursor: "pointer",
-                borderBottom: tab === t ? "2.5px solid var(--q-ink)" : "2.5px solid transparent",
-                color: tab === t ? "var(--q-ink)" : "var(--q-ink-3)",
+                borderBottom: tab === tabKey ? "2.5px solid var(--q-ink)" : "2.5px solid transparent",
+                color: tab === tabKey ? "var(--q-ink)" : "var(--q-ink-3)",
                 marginBottom: -1.5,
               }}
             >
-              {t === "students" ? "Students" : "Questions"}
+              {t(tabKey === "students" ? "tabStudents" : "tabQuestions")}
             </button>
           ))}
         </div>
@@ -451,7 +456,7 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
           <div className="q-card q-report-table-wrap" style={{ overflow: "hidden" }}>
             <div className="q-report-table-inner">
             <div style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 2fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
-              <div>#</div><div>Student</div><div>Score</div><div>Percent</div><div>Time</div>
+              <div>{t("tableRank")}</div><div>{t("tableStudent")}</div><div>{t("tableScore")}</div><div>{t("tablePercent")}</div><div>{t("tableTime")}</div>
             </div>
             {sorted.map((s, i) => {
               const rank = i === 0 ? 1 : sorted[i].percentage === sorted[i - 1].percentage ? sorted.findIndex(x => x.percentage === s.percentage) + 1 : i + 1;
@@ -473,7 +478,7 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
                   <span style={{ fontFamily: "var(--q-mono)", fontSize: 12 }}>{s.percentage}%</span>
                 </div>
                 <div style={{ fontFamily: "var(--q-mono)", color: "var(--q-ink-3)", fontSize: 12 }}>
-                  {s.submittedAt ? new Date(s.submittedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
+                  {s.submittedAt ? format.dateTime(new Date(s.submittedAt), { timeStyle: "short" }) : "—"}
                 </div>
               </div>
               );
@@ -485,7 +490,7 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
         {/* questions tab */}
         {tab === "questions" && (
           !breakdown ? (
-            <div style={{ textAlign: "center", padding: 40, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>Loading breakdown…</div>
+            <div style={{ textAlign: "center", padding: 40, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>{t("loadingBreakdown")}</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {breakdown.questions.map((q, qi) => (
@@ -501,7 +506,7 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
                         fontSize: 11, fontFamily: "var(--q-mono)", flexShrink: 0,
                       }}
                     >
-                      {q.correctRate}% correct
+                      {t("correctRate", { pct: q.correctRate })}
                     </span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
