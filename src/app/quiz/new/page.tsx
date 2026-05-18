@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 type AnswerOption = { text: string; isCorrect: boolean };
 type QuestionForm = { text: string; type: "SINGLE" | "MULTIPLE"; answerOptions: AnswerOption[] };
@@ -17,6 +18,7 @@ const LETTERS = ["A","B","C","D","E","F"];
 
 export default function NewQuizPage() {
   const router = useRouter();
+  const t = useTranslations("editor");
   const [title, setTitle] = useState("");
   const [timeLimit, setTimeLimit] = useState(15);
   const [questions, setQuestions] = useState<QuestionForm[]>([
@@ -77,8 +79,8 @@ export default function NewQuizPage() {
     setLoading(true);
     const payload = { title, timeLimit, questions: questions.map((q, i) => ({ text: q.text, type: q.type, order: i + 1, answerOptions: q.answerOptions })) };
     const res = await fetch("/api/quizzes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    if (res.ok) { toast.success("Quiz created!"); router.push("/dashboard"); }
-    else { const d = await res.json(); toast.error(d.error || "Failed to create quiz"); setLoading(false); }
+    if (res.ok) { toast.success(t("quizCreated")); router.push("/dashboard"); }
+    else { const d = await res.json(); toast.error(d.error || t("createFailed")); setLoading(false); }
   }
 
   return (
@@ -86,31 +88,31 @@ export default function NewQuizPage() {
       {/* topbar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link href="/dashboard" className="q-btn q-btn-ghost q-btn-sm">← Dashboard</Link>
+          <Link href="/dashboard" className="q-btn q-btn-ghost q-btn-sm">← {t("backToDashboard")}</Link>
           <input
             className="q-input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Quiz title…"
+            placeholder={t("titlePlaceholder")}
             style={{ width: 280, fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 16, border: "none", background: "transparent", outline: "none", padding: "4px 0" }}
           />
-          <span className="q-chip q-chip-yellow" style={{ fontSize: 11 }}>DRAFT</span>
+          <span className="q-chip q-chip-yellow" style={{ fontSize: 11 }}>{t("badgeDraft")}</span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span className="q-eyebrow">Time limit</span>
+            <span className="q-eyebrow">{t("timeLimitLabel")}</span>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <input
                 type="number" min={1} max={120} value={timeLimit}
                 onChange={(e) => setTimeLimit(Number(e.target.value))}
                 style={{ width: 52, border: "1.5px solid var(--q-line)", borderRadius: 6, padding: "3px 6px", fontFamily: "var(--q-mono)", fontSize: 13, background: "var(--q-bg)" }}
               />
-              <span style={{ fontSize: 12, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>min</span>
+              <span style={{ fontSize: 12, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>{t("timeLimitUnit")}</span>
             </div>
           </div>
-          <button className="q-btn q-btn-sm">Preview</button>
+          <button className="q-btn q-btn-sm">{t("previewButton")}</button>
           <button className="q-btn q-btn-primary q-btn-sm" onClick={handleSubmit} disabled={loading}>
-            {loading ? "Saving…" : "Publish quiz"}
+            {loading ? t("saving") : t("publishQuiz")}
           </button>
         </div>
       </div>
@@ -119,7 +121,7 @@ export default function NewQuizPage() {
         {/* question rail */}
         <div style={{ width: 280, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", padding: 16, gap: 10, overflow: "auto", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span className="q-eyebrow">Questions · {questions.length} of 20</span>
+            <span className="q-eyebrow">{t("questionsCount", { count: questions.length, max: 20 })}</span>
           </div>
           {questions.map((q, i) => (
             <div
@@ -146,11 +148,11 @@ export default function NewQuizPage() {
                       color: i === activeQ ? "var(--q-bg)" : "var(--q-ink-3)",
                     }}
                   >
-                    {q.type.toLowerCase()}
+                    {t(q.type === "SINGLE" ? "typeSingle" : "typeMultiple")}
                   </span>
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {q.text || "Untitled question"}
+                  {q.text || t("untitledQuestion")}
                 </div>
               </div>
               {questions.length > 1 && (
@@ -168,7 +170,7 @@ export default function NewQuizPage() {
           ))}
           {questions.length < 20 && (
             <button className="q-btn q-btn-sm" style={{ alignSelf: "stretch", justifyContent: "center" }} onClick={addQuestion}>
-              ＋ Add question
+              {t("addQuestion")}
             </button>
           )}
         </div>
@@ -177,23 +179,23 @@ export default function NewQuizPage() {
         <div style={{ flex: 1, padding: 36, overflow: "auto", display: "flex", flexDirection: "column", gap: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <span className="q-eyebrow">Question {activeQ + 1} of {questions.length}</span>
-              <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 28, letterSpacing: "-0.02em", marginTop: 4 }}>Editing</div>
+              <span className="q-eyebrow">{t("questionCountLabel", { current: activeQ + 1, total: questions.length })}</span>
+              <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 28, letterSpacing: "-0.02em", marginTop: 4 }}>{t("editingLabel")}</div>
             </div>
             {/* type toggle */}
             <div style={{ display: "flex", gap: 4, padding: 4, background: "var(--q-bg-2)", border: "1.5px solid var(--q-line)", borderRadius: 999 }}>
-              {(["SINGLE","MULTIPLE"] as const).map((t) => (
+              {(["SINGLE","MULTIPLE"] as const).map((type) => (
                 <button
-                  key={t}
+                  key={type}
                   className="q-btn q-btn-sm"
                   style={{
-                    background: q.type === t ? "var(--q-ink)" : "transparent",
-                    color: q.type === t ? "var(--q-bg)" : "var(--q-ink-2)",
+                    background: q.type === type ? "var(--q-ink)" : "transparent",
+                    color: q.type === type ? "var(--q-bg)" : "var(--q-ink-2)",
                     border: "none", boxShadow: "none",
                   }}
-                  onClick={() => updateQuestionType(activeQ, t)}
+                  onClick={() => updateQuestionType(activeQ, type)}
                 >
-                  {t === "SINGLE" ? "● Single answer" : "☰ Multiple answers"}
+                  {type === "SINGLE" ? t("singleAnswer") : t("multipleAnswers")}
                 </button>
               ))}
             </div>
@@ -201,12 +203,12 @@ export default function NewQuizPage() {
 
           {/* question text */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span className="q-eyebrow">Question</span>
+            <span className="q-eyebrow">{t("questionLabel")}</span>
             <textarea
               className="q-input"
               value={q.text}
               onChange={(e) => updateQuestion(activeQ, e.target.value)}
-              placeholder="Type your question here…"
+              placeholder={t("questionPlaceholder")}
               rows={2}
               style={{ fontSize: 22, fontFamily: "var(--q-display)", fontWeight: 600, resize: "vertical", letterSpacing: "-0.01em" }}
             />
@@ -215,8 +217,8 @@ export default function NewQuizPage() {
           {/* options */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span className="q-eyebrow">Answer options · {q.answerOptions.length} of 6</span>
-              <span style={{ fontSize: 13, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>Mark the correct answer ✓</span>
+              <span className="q-eyebrow">{t("answerOptionsCount", { count: q.answerOptions.length, max: 6 })}</span>
+              <span style={{ fontSize: 13, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>{t("markCorrectHint")}</span>
             </div>
             {q.answerOptions.map((opt, oi) => (
               <div key={oi} style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -236,7 +238,7 @@ export default function NewQuizPage() {
                   style={{ flex: 1, fontSize: 16 }}
                   value={opt.text}
                   onChange={(e) => updateOption(activeQ, oi, e.target.value)}
-                  placeholder={`Option ${LETTERS[oi]}`}
+                  placeholder={t("optionPlaceholder", { letter: LETTERS[oi] })}
                 />
                 <button
                   className="q-btn q-btn-sm"
@@ -248,7 +250,7 @@ export default function NewQuizPage() {
                   }}
                   onClick={() => toggleCorrect(activeQ, oi)}
                 >
-                  {opt.isCorrect ? "✓ Correct" : "Mark correct"}
+                  {opt.isCorrect ? t("correctLabel") : t("markCorrectLabel")}
                 </button>
                 {q.answerOptions.length > 2 && (
                   <button
@@ -262,7 +264,7 @@ export default function NewQuizPage() {
             ))}
             {q.answerOptions.length < 6 && (
               <button className="q-btn q-btn-sm" style={{ alignSelf: "flex-start" }} onClick={() => addOption(activeQ)}>
-                ＋ Add option
+                {t("addOption")}
               </button>
             )}
           </div>
@@ -273,15 +275,15 @@ export default function NewQuizPage() {
               disabled={activeQ === 0}
               onClick={() => setActiveQ((p) => p - 1)}
             >
-              ← Previous
+              ← {t("previous")}
             </button>
             {activeQ < questions.length - 1 ? (
               <button className="q-btn q-btn-primary q-btn-sm" onClick={() => setActiveQ((p) => p + 1)}>
-                Next question →
+                {t("nextQuestion")} →
               </button>
             ) : (
               <button className="q-btn q-btn-primary q-btn-sm" onClick={handleSubmit} disabled={loading}>
-                {loading ? "Saving…" : "Save quiz ✓"}
+                {loading ? t("saving") : t("saveQuiz")}
               </button>
             )}
           </div>
