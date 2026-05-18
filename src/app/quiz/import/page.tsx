@@ -296,13 +296,13 @@ export default function ImportQuizPage() {
                       {isMultiple ? "Multiple" : "Single"}
                     </span>
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: 16, fontFamily: "var(--q-sans)" }}>{qText}</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  <div style={{ fontWeight: 600, fontSize: 16, fontFamily: "var(--q-sans)", overflowWrap: "anywhere", minWidth: 0 }}>{qText}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
                     {opts.map((o, j) => {
                       const correct = o.includes("(correct)");
                       const text = o.replace(/^[A-Z]\)\s*/, "").replace("(correct)", "").trim();
                       return (
-                        <span key={j} className="q-chip" style={{ background: correct ? "var(--q-green-soft)" : "var(--q-bg-2)", borderColor: correct ? "var(--q-green)" : "var(--q-line-2)", fontWeight: correct ? 600 : 400 }}>
+                        <span key={j} className="q-chip" style={{ background: correct ? "var(--q-green-soft)" : "var(--q-bg-2)", borderColor: correct ? "var(--q-green)" : "var(--q-line-2)", fontWeight: correct ? 600 : 400, whiteSpace: "normal", overflowWrap: "anywhere", alignItems: "flex-start", maxWidth: "100%", borderRadius: 8 }}>
                           <b>{o[0]}.</b> {text} {correct && "✓"}
                         </span>
                       );
