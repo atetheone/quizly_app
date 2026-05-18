@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Bricolage_Grotesque } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import "./globals.css";
@@ -36,6 +36,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const messages = await getMessages();
   return (
     <html
       lang={locale}
@@ -52,7 +53,7 @@ export default async function RootLayout({
             --q-mono: var(--font-geist-mono, ui-monospace, monospace);
           }
         `}</style>
-        <NextIntlClientProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>{children}</Providers>
           <LanguageSwitcher />
         </NextIntlClientProvider>
