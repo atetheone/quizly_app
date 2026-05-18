@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "Quizly",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "language": "Language",
+    "languageEnglish": "English",
+    "languageFrench": "French",
+    "questionCount": "{count, plural, =0 {No questions} one {# question} other {# questions}}",
+    "studentCount": "{count, plural, =0 {No students} one {# student} other {# students}}",
+    "hereCount": "{count, plural, other {# here}}",
+    "timer": "{minutes}:{seconds}"
+  },
+  "validation": {
+    "questionTextRequired": "Question text is required",
+    "answerTextRequired": "Answer text is required",
+    "minAnswerOptions": "At least 2 answer options required",
+    "maxAnswerOptions": "Maximum 6 answer options allowed",
+    "titleRequired": "Title is required",
+    "titleTooLong": "Title too long",
+    "timeLimitMin": "Time limit must be at least 1 minute",
+    "timeLimitMax": "Time limit max 120 minutes",
+    "minQuestions": "At least 1 question required",
+    "maxQuestions": "Maximum 20 questions allowed",
+    "nameRequired": "Name is required",
+    "nameTooLong": "Name too long",
+    "invalidEmail": "Invalid email",
+    "passwordMin": "Password must be at least 6 characters",
+    "topicRequired": "Topic is required",
+    "difficultySum": "Difficulty mix must sum to the question count"
+  },
+  "errors": {
+    "unauthorized": "Unauthorized",
+    "invalidInput": "Invalid input",
+    "internal": "Internal server error",
+    "roomNotFound": "Room not found",
+    "roomClosed": "This room is not accepting new students",
+    "emailRegistered": "Email already registered",
+    "genUnavailable": "AI generation is temporarily unavailable. Try again shortly.",
+    "genRateLimit": "AI rate limit reached on the free tier. Try again in a moment.",
+    "genNotConfigured": "AI generation is not configured. Set OPENROUTER_API_KEY (free at openrouter.ai).",
+    "genBadKey": "AI generation rejected the API key. Check OPENROUTER_API_KEY.",
+    "genEmpty": "AI returned an empty response.",
+    "genInvalidQuiz": "AI could not produce a valid quiz. Try again or rephrase the topic."
+  }
+}

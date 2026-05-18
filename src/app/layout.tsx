@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Bricolage_Grotesque } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { Providers } from "@/components/providers";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,14 +27,15 @@ export const metadata: Metadata = {
   description: "Create quizzes, launch rooms, and grade students in real-time",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body
@@ -45,7 +49,10 @@ export default function RootLayout({
             --q-mono: var(--font-geist-mono, ui-monospace, monospace);
           }
         `}</style>
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider>
+          <Providers>{children}</Providers>
+          <LanguageSwitcher />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

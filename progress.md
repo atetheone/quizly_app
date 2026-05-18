@@ -113,6 +113,18 @@
 - [x] `OPENROUTER_API_KEY` + `QUIZ_GEN_MODEL` env vars documented
 - [ ] Production OpenRouter key configured
 
+### Phase 10: Internationalization (EN + FR) — issue #10
+- [x] PR1: i18n infra — next-intl v4 (cookie, no URL prefix), `src/i18n/*`, en/fr catalogs
+- [x] PR1: Accept-Language detection in middleware (fallback en, cookie wins)
+- [x] PR1: NextIntlClientProvider + global language switcher
+- [ ] PR2: French quiz generation + validation/error message keys
+- [ ] PR3: landing + auth pages
+- [ ] PR4: dashboard + date/plural formatting
+- [ ] PR5: quiz editor (new + edit)
+- [ ] PR6: join + join/[code]
+- [ ] PR7: play/[code] + timer/score formatting
+- [ ] PR8: session/[code] + final stray-string sweep
+
 ### Phase 7: Polish & Deployment
 - [x] Docker Compose for PostgreSQL (postgres:16-alpine)
 - [x] Environment variable setup for dev (.env)
@@ -174,3 +186,4 @@
 | 2026-04-30 | — | Build passes (`npm run build` succeeds) |
 | 2026-05-18 | 2 | Import preview implemented (live preview of parsed questions) |
 | 2026-05-18 | 9 | AI quiz generation (topic + difficulty) merged to `main` via PR |
+| 2026-05-18 | 10 | i18n PR1: infra + Accept-Language detection + EN/FR switcher (issue #10) |
