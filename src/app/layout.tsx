@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Bricolage_Grotesque } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import "./globals.css";
@@ -22,10 +22,13 @@ const bricolage = Bricolage_Grotesque({
   weight: "variable",
 });
 
-export const metadata: Metadata = {
-  title: "Quizly - Live Quiz Platform",
-  description: "Create quizzes, launch rooms, and grade students in real-time",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("common");
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+  };
+}
 
 export default async function RootLayout({
   children,
