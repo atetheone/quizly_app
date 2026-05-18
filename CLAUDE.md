@@ -136,9 +136,9 @@ AI quiz generation and session-history features):
 8. **Commits** — atomic, [Conventional Commits](https://www.conventionalcommits.org)
    (`feat:`, `fix:`, `docs:`, `chore:`), one logical change each. Mirror the
    scaffold order above (dep/env → schema → module → route → UI → fixes).
-9. **Gates before PR** — `npm run lint` and `npm run build` must pass; type-check
-   with `npx tsc --noEmit`. Update `progress.md` (phase checklist + status log)
-   and any affected docs/env examples.
+9. **Gates before PR** — `npm run lint`, `npm run typecheck`, and
+   `npm run build` must pass. Update `progress.md` (phase checklist + status
+   log) and any affected docs/env examples.
 10. **PR → `main`** — open a PR that closes the issue; merge keeps history (no
     squash). After merge, delete the merged branch and prune stale remotes.
 
