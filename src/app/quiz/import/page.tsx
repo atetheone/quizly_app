@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -34,19 +34,17 @@ export default function ImportQuizPage() {
   const [loading, setLoading] = useState(false);
 
   // ── AI generation panel ──
-  const [genOpen, setGenOpen] = useState(false);
+  const [genOpen, setGenOpen] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("generate") === "1"
+  );
   const [topic, setTopic] = useState("");
   const [count, setCount] = useState(10);
   const [level, setLevel] = useState<Level>("MEDIUM");
   const [mixMode, setMixMode] = useState(false);
   const [mix, setMix] = useState({ easy: 3, medium: 5, hard: 2 });
   const [generating, setGenerating] = useState(false);
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("generate") === "1") {
-      setGenOpen(true);
-    }
-  }, []);
 
   const mixTotal = mix.easy + mix.medium + mix.hard;
   const genDisabled =
