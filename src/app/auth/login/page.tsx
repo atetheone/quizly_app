@@ -4,10 +4,12 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { QLogo } from "@/components/q-ui";
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +23,7 @@ export default function LoginPage() {
     const result = await signIn("credentials", { email, password, redirect: false });
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(t("invalidCredentials"));
       setLoading(false);
     } else {
       router.push("/dashboard");
@@ -47,12 +49,12 @@ export default function LoginPage() {
               color: "#fff", letterSpacing: "-0.025em", lineHeight: 1.05,
             }}
           >
-            Welcome back,
+            {t("welcomeBack")}
             <br />
-            teacher.
+            {t("teacherSuffix")}
           </div>
           <div style={{ fontSize: 15, color: "rgba(255,255,255,0.8)", lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>
-            One account for unlimited quizzes, sessions, and students.
+            {t("tagline")}
           </div>
           <div
             className="q-card"
@@ -63,12 +65,12 @@ export default function LoginPage() {
           >
             <div className="q-eyebrow" style={{ color: "var(--q-yellow)" }}>★ ★ ★ ★ ★</div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 6, lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>
-              &quot;Replaced three other tools. The kids beg for review day now.&quot; — Ms. Tran, 6th grade
+              &quot;{t("testimonialQuote")}&quot; {t("testimonialAuthor")}
             </div>
           </div>
         </div>
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", position: "relative", fontFamily: "var(--q-sans)" }}>
-          Students never need to sign up.
+          {t("noStudentSignup")}
         </div>
       </div>
 
@@ -81,10 +83,10 @@ export default function LoginPage() {
       >
         <div>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 32, letterSpacing: "-0.02em" }}>
-            Sign in
+            {t("loginTitle")}
           </div>
           <div style={{ fontSize: 14, color: "var(--q-ink-3)", marginTop: 4, fontFamily: "var(--q-sans)" }}>
-            Teacher account only
+            {t("loginSubtitle")}
           </div>
         </div>
 
@@ -100,12 +102,12 @@ export default function LoginPage() {
             <path fill="#fbbc05" d="M3.95 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.04l2.99-2.34z"/>
             <path fill="#ea4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96L3.95 7.3C4.66 5.16 6.65 3.58 9 3.58z"/>
           </svg>
-          Continue with Google
+          {t("continueWithGoogle")}
         </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1, height: 1, background: "var(--q-line-2)" }} />
-          <span className="q-eyebrow">or with email</span>
+          <span className="q-eyebrow">{t("dividerOrEmail")}</span>
           <div style={{ flex: 1, height: 1, background: "var(--q-line-2)" }} />
         </div>
 
@@ -122,36 +124,36 @@ export default function LoginPage() {
             </div>
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span className="q-eyebrow">Work email</span>
+            <span className="q-eyebrow">{t("emailLabel")}</span>
             <input
               className="q-input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@school.edu"
+              placeholder={t("emailPlaceholder")}
               required
             />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span className="q-eyebrow">Password</span>
+            <span className="q-eyebrow">{t("passwordLabel")}</span>
             <input
               className="q-input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder={t("passwordPlaceholder")}
               required
             />
           </div>
           <button type="submit" className="q-btn q-btn-primary q-btn-lg" disabled={loading}>
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? t("signInLoading") : t("signInButton")}
           </button>
         </form>
 
         <div style={{ fontSize: 14, color: "var(--q-ink-3)", textAlign: "center", fontFamily: "var(--q-sans)" }}>
-          No account yet?{" "}
+          {t("noAccount")}{" "}
           <Link href="/auth/signup" style={{ color: "var(--q-ink)", fontWeight: 600, textDecoration: "underline" }}>
-            Create one
+            {t("createOne")}
           </Link>
         </div>
       </div>

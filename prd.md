@@ -365,7 +365,70 @@ D) Frog
 | Uptime target | Vercel default (99.9%) |
 | Accessibility | WCAG 2.1 AA for student-facing pages |
 
-## 11. V1 Scope — Excluded
+## 11. Internationalization (EN + FR)
+
+Quizly supports English and French. The implementation uses `next-intl` v4 with a cookie-based locale strategy — no URL prefix so that room links remain clean and shareable.
+
+### 11.1 Locale Strategy
+
+- **Cookie-based**: `NEXT_LOCALE` cookie stores the user's preference. `Accept-Language` header is used as a fallback on first visit.
+- **No URL prefix**: Routes stay `/`, `/auth/login`, `/join`, `/session/{code}` regardless of locale.
+- **Global language switcher**: Available in the nav / auth sidebar; toggles cookie and reloads.
+
+### 11.2 Message Catalog Organization
+
+Messages are organized by namespace in `messages/en.json` and `messages/fr.json`:
+
+| Namespace | Content |
+|---|---|
+| `common` | App name, save/cancel/delete, language labels, generic count/plural rules |
+| `validation` | Form validation errors (Zod messages) |
+| `errors` | Server/API error strings |
+| `import` | Import / generate quiz page |
+| `landing` | Landing page hero, nav, demo card, steps |
+| `auth` | Login / signup — shared left panel + form labels + page-specific CTAs |
+
+Each namespace is translated in full — no half-French pages.
+
+### 11.3 Pages to Localize
+
+| Page | Component Type | Translation Hook |
+|---|---|---|
+| `/` (landing) | Server (async) | `getTranslations('landing')` |
+| `/auth/login` | Client | `useTranslations('auth')` |
+| `/auth/signup` | Client | `useTranslations('auth')` |
+| `/dashboard` | TBD | TBD |
+| `/quiz/new`, `/quiz/[id]/edit` | TBD | TBD |
+| `/quiz/import` | Client | `useTranslations('import')` ✅ |
+| `/join`, `/join/[code]` | TBD | TBD |
+| `/play/[code]` | TBD | TBD |
+| `/session/[code]` | TBD | TBD |
+
+### 11.4 Demo Data & Testimonials
+
+Demo content on the landing page (preview card subject, student statuses, time left) and auth testimonials are translated via message keys so they render in the active locale. Example: `"Cell Biology"` → `"Biologie cellulaire"`, `"done"` → `"terminé"`.
+
+### 11.5 PR Roadmap
+
+| PR | Scope | Status |
+|---|---|---|
+| PR1 | i18n infra — `next-intl`, cookie locale, middleware, language switcher, base catalogs | ✅ Merged |
+| PR2 | French quiz generation + import page fully localized | ✅ Merged |
+| PR3 | Landing page + auth pages (login + signup) | ✅ Ready |
+| PR4 | Dashboard + date/plural formatting | ⏳ Planned |
+| PR5 | Quiz editor (`/quiz/new` + `/quiz/[id]/edit`) | ⏳ Planned |
+| PR6 | Join pages (`/join` + `/join/[code]`) | ⏳ Planned |
+| PR7 | Play page (`/play/[code]`) + timer/score formatting | ⏳ Planned |
+| PR8 | Session page (`/session/[code]`) + final stray-string sweep | ⏳ Planned |
+
+### 11.6 Out of Scope
+
+- RTL languages (V1 is LTR only)
+- Additional locales beyond EN + FR
+- Dynamic locale switching without page reload
+- Locale-specific routing / URL prefixes
+
+## 12. V1 Scope — Excluded
 
 These features are explicitly **out of scope** for V1:
 
@@ -384,7 +447,7 @@ These features are explicitly **out of scope** for V1:
 - Quiz sharing between teachers
 - Dark mode
 
-## 12. Future Considerations (V2+)
+## 13. Future Considerations (V2+)
 
 - Teacher authentication improvements (password reset, email verification)
 - Student accounts for persistent history

@@ -118,7 +118,7 @@
 - [x] PR1: Accept-Language detection in middleware (fallback en, cookie wins)
 - [x] PR1: NextIntlClientProvider + global language switcher
 - [x] PR2: French quiz generation + generate/import error keys + localized import page
-- [ ] PR3: landing + auth pages
+  - [x] PR3: landing + auth pages
 - [ ] PR4: dashboard + date/plural formatting
 - [ ] PR5: quiz editor (new + edit)
 - [ ] PR6: join + join/[code]
@@ -188,3 +188,4 @@
 | 2026-05-18 | 9 | AI quiz generation (topic + difficulty) merged to `main` via PR |
 | 2026-05-18 | 10 | i18n PR1: infra + Accept-Language detection + EN/FR switcher (issue #10) |
 | 2026-05-18 | 10 | i18n PR2: French quiz generation + import page localized (issue #12) |
+| 2026-05-18 | 10 | i18n PR3: landing + auth pages localized (issue #14) |

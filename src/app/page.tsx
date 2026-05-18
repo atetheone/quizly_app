@@ -1,20 +1,18 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { QLogo, QAvatar } from "@/components/q-ui";
 
 const students = ["Aria", "Jamal", "Linh", "Sara"];
-const steps = [
-  { n: "01", t: "Build a quiz", d: "Type questions, paste from a doc, or import in our simple format.", color: "var(--q-ink)" },
-  { n: "02", t: "Share the code", d: "Project the 6-letter code. Students join — no account, no app.", color: "var(--q-coral)" },
-  { n: "03", t: "Watch it happen", d: "Live progress for every student. Auto-graded the second time runs out.", color: "var(--q-indigo)" },
-];
-const roster = [
-  { n: "Aria", p: 100, s: "done" },
-  { n: "Jamal", p: 75, s: "Q9 of 12" },
-  { n: "Linh", p: 58, s: "Q7 of 12" },
-  { n: "Marcos", p: 33, s: "Q4 of 12" },
+const roster: { n: string; p: number; done: boolean; current: number; total: number }[] = [
+  { n: "Aria", p: 100, done: true, current: 12, total: 12 },
+  { n: "Jamal", p: 75, done: false, current: 9, total: 12 },
+  { n: "Linh", p: 58, done: false, current: 7, total: 12 },
+  { n: "Marcos", p: 33, done: false, current: 4, total: 12 },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations("landing");
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--q-bg)", display: "flex", flexDirection: "column" }}>
       {/* Nav */}
@@ -26,10 +24,10 @@ export default function HomePage() {
       >
         <QLogo size={30} />
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 14, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)", cursor: "pointer" }}>How it works</span>
-          <span style={{ fontSize: 14, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)", cursor: "pointer" }}>For teachers</span>
-          <Link href="/auth/login" className="q-btn q-btn-sm">Log in</Link>
-          <Link href="/auth/signup" className="q-btn q-btn-primary q-btn-sm">Get started →</Link>
+          <span style={{ fontSize: 14, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)", cursor: "pointer" }}>{t("navHowItWorks")}</span>
+          <span style={{ fontSize: 14, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)", cursor: "pointer" }}>{t("navForTeachers")}</span>
+          <Link href="/auth/login" className="q-btn q-btn-sm">{t("navLogin")}</Link>
+          <Link href="/auth/signup" className="q-btn q-btn-primary q-btn-sm">{t("navGetStarted")}</Link>
         </div>
       </nav>
 
@@ -45,9 +43,9 @@ export default function HomePage() {
           <div style={{ flex: "1 1 460px", display: "flex", flexDirection: "column", gap: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span className="q-chip q-chip-yellow" style={{ fontWeight: 600 }}>
-                <span className="q-dot q-dot-live" /> Real-time
+                <span className="q-dot q-dot-live" /> {t("badgeRealTime")}
               </span>
-              <span className="q-eyebrow">v1 · for teachers</span>
+              <span className="q-eyebrow">{t("badgeVersion")}</span>
             </div>
             <h1
               style={{
@@ -56,21 +54,20 @@ export default function HomePage() {
                 lineHeight: 0.95, margin: 0, color: "var(--q-ink)",
               }}
             >
-              Quizzes that{" "}
-              <em style={{ fontStyle: "italic", color: "var(--q-coral)" }}>actually</em>
+              {t("headlineLine1")}{" "}
+              <em style={{ fontStyle: "italic", color: "var(--q-coral)" }}>{t("headlineEmphasis")}</em>
               <br />
-              wake the room up.
+              {t("headlineLine2")}
             </h1>
             <p style={{ fontSize: 17, maxWidth: 520, color: "var(--q-ink-2)", margin: 0, lineHeight: 1.55, fontFamily: "var(--q-sans)" }}>
-              Build a quiz in two minutes. Drop a 6‑letter code on the board. Watch every answer
-              roll in, live, while you wander the classroom.
+              {t("description")}
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <Link href="/auth/signup" className="q-btn q-btn-primary q-btn-lg">
-                Start teaching — it&apos;s free
+                {t("ctaPrimary")}
               </Link>
               <Link href="/join" className="q-btn q-btn-lg">
-                I have a code →
+                {t("ctaSecondary")}
               </Link>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 8 }}>
@@ -82,7 +79,7 @@ export default function HomePage() {
                 ))}
               </div>
               <span style={{ fontSize: 13, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)" }}>
-                <b>12,000+ classrooms</b> ran a Quizly today
+                <b>{t("socialProofCount", { count: 12000 })}</b> {t("socialProofSuffix")}
               </span>
             </div>
           </div>
@@ -99,9 +96,9 @@ export default function HomePage() {
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14, alignItems: "center" }}>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   <span className="q-dot q-dot-live" />
-                  <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>LIVE · Cell Biology</span>
+                  <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>{t("previewLive")} · {t("previewSubject")}</span>
                 </div>
-                <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>7:42 left</span>
+                <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>{t("previewTimeLeft", { m: 7, s: 42 })}</span>
               </div>
               <div
                 style={{
@@ -128,12 +125,12 @@ export default function HomePage() {
                         className="q-bar-fill"
                         style={{
                           width: `${s.p}%`,
-                          background: s.s === "done" ? "var(--q-green)" : "var(--q-indigo)",
+                          background: s.done ? "var(--q-green)" : "var(--q-indigo)",
                         }}
                       />
                     </div>
                     <span style={{ fontFamily: "var(--q-mono)", fontSize: 11, width: 56, textAlign: "right", color: "var(--q-ink-3)" }}>
-                      {s.s}
+                      {s.done ? t("previewStatusDone") : t("previewStatusProgress", { current: s.current, total: s.total })}
                     </span>
                   </div>
                 ))}
@@ -152,27 +149,30 @@ export default function HomePage() {
                 lineHeight: 1.05, textAlign: "center",
               }}
             >
-              no logins
+              {t("stickerLine1")}
               <br />
-              for kids
+              {t("stickerLine2")}
             </div>
           </div>
         </div>
 
         {/* 3-step strip */}
         <div style={{ display: "flex", gap: 16, padding: "0 64px 56px", flexWrap: "wrap" }}>
-          {steps.map((s, i) => (
-            <div key={i} className="q-card" style={{ flex: "1 1 240px", padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-              <div
-                className="q-display"
-                style={{ fontSize: 48, color: s.color }}
-              >
-                {s.n}
-              </div>
-              <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22, letterSpacing: "-0.01em" }}>{s.t}</div>
-              <div style={{ fontSize: 14, color: "var(--q-ink-2)", lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>{s.d}</div>
-            </div>
-          ))}
+          <div className="q-card" style={{ flex: "1 1 240px", padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="q-display" style={{ fontSize: 48, color: "var(--q-ink)" }}>01</div>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22, letterSpacing: "-0.01em" }}>{t("step1Title")}</div>
+            <div style={{ fontSize: 14, color: "var(--q-ink-2)", lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>{t("step1Description")}</div>
+          </div>
+          <div className="q-card" style={{ flex: "1 1 240px", padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="q-display" style={{ fontSize: 48, color: "var(--q-coral)" }}>02</div>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22, letterSpacing: "-0.01em" }}>{t("step2Title")}</div>
+            <div style={{ fontSize: 14, color: "var(--q-ink-2)", lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>{t("step2Description")}</div>
+          </div>
+          <div className="q-card" style={{ flex: "1 1 240px", padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="q-display" style={{ fontSize: 48, color: "var(--q-indigo)" }}>03</div>
+            <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22, letterSpacing: "-0.01em" }}>{t("step3Title")}</div>
+            <div style={{ fontSize: 14, color: "var(--q-ink-2)", lineHeight: 1.5, fontFamily: "var(--q-sans)" }}>{t("step3Description")}</div>
+          </div>
         </div>
       </main>
     </div>
