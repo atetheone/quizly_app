@@ -117,7 +117,7 @@
 - [x] PR1: i18n infra — next-intl v4 (cookie, no URL prefix), `src/i18n/*`, en/fr catalogs
 - [x] PR1: Accept-Language detection in middleware (fallback en, cookie wins)
 - [x] PR1: NextIntlClientProvider + global language switcher
-- [ ] PR2: French quiz generation + validation/error message keys
+- [x] PR2: French quiz generation + generate/import error keys + localized import page
 - [ ] PR3: landing + auth pages
 - [ ] PR4: dashboard + date/plural formatting
 - [ ] PR5: quiz editor (new + edit)
@@ -187,3 +187,4 @@
 | 2026-05-18 | 2 | Import preview implemented (live preview of parsed questions) |
 | 2026-05-18 | 9 | AI quiz generation (topic + difficulty) merged to `main` via PR |
 | 2026-05-18 | 10 | i18n PR1: infra + Accept-Language detection + EN/FR switcher (issue #10) |
+| 2026-05-18 | 10 | i18n PR2: French quiz generation + import page localized (issue #12) |
