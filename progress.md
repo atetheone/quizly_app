@@ -119,7 +119,7 @@
 - [x] PR1: NextIntlClientProvider + global language switcher
 - [x] PR2: French quiz generation + generate/import error keys + localized import page
   - [x] PR3: landing + auth pages
-- [ ] PR4: dashboard + date/plural formatting
+  - [x] PR4: dashboard + date/plural formatting
 - [ ] PR5: quiz editor (new + edit)
 - [ ] PR6: join + join/[code]
 - [ ] PR7: play/[code] + timer/score formatting
@@ -189,3 +189,4 @@
 | 2026-05-18 | 10 | i18n PR1: infra + Accept-Language detection + EN/FR switcher (issue #10) |
 | 2026-05-18 | 10 | i18n PR2: French quiz generation + import page localized (issue #12) |
 | 2026-05-18 | 10 | i18n PR3: landing + auth pages localized (issue #14) |
+| 2026-05-18 | 10 | i18n PR4: dashboard + locale-aware dates localized (issue #16) |
