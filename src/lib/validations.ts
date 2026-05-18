@@ -34,25 +34,34 @@ export const registerSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name too long"),
 });
 
+// Messages on the generate/import path are i18n keys (resolved client-side via
+// the `validation` namespace). Other schemas keep literals until their
+// consuming page is localized in a later PR.
 export const quizImportSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  title: z
+    .string()
+    .min(1, "validation.titleRequired")
+    .max(200, "validation.titleTooLong"),
   timeLimit: z.number().int().min(1).max(120),
-  rawText: z.string().min(1, "Quiz text is required"),
+  rawText: z.string().min(1, "validation.quizTextRequired"),
 });
 
 export const difficultyEnum = z.enum(["EASY", "MEDIUM", "HARD"]);
+
+export const localeEnum = z.enum(["en", "fr"]);
 
 export const quizGenerateSchema = z
   .object({
     topic: z
       .string()
-      .min(1, "Topic is required")
-      .max(200, "Topic too long"),
+      .min(1, "validation.topicRequired")
+      .max(200, "validation.topicTooLong"),
     count: z
       .number()
       .int()
-      .min(1, "At least 1 question")
-      .max(20, "Maximum 20 questions allowed"),
+      .min(1, "validation.minQuestions")
+      .max(20, "validation.maxQuestions"),
+    language: localeEnum.default("en"),
     spread: z.discriminatedUnion("kind", [
       z.object({ kind: z.literal("single"), level: difficultyEnum }),
       z.object({
@@ -67,7 +76,7 @@ export const quizGenerateSchema = z
     (d) =>
       d.spread.kind !== "mix" ||
       d.spread.easy + d.spread.medium + d.spread.hard === d.count,
-    { message: "Difficulty mix must sum to the question count", path: ["spread"] }
+    { message: "validation.difficultySum", path: ["spread"] }
   );
 
 export type QuizGenerateInput = z.infer<typeof quizGenerateSchema>;
