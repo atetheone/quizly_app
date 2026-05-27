@@ -56,7 +56,7 @@ export default function PlayPage() {
     fetch(`/api/sessions/${code}`).then((r) => r.json()).then((data) => {
       if (data.error) return;
       setSessionInfo({ quizTitle: data.quizTitle, timeLimit: data.timeLimit, mode: data.mode });
-      if (data.status === "ACTIVE") { fetchQuiz(); }
+      if (data.status === "ACTIVE") { setPhase("active"); fetchQuiz(); startTimer(); }
     });
   }, [code]);
 
