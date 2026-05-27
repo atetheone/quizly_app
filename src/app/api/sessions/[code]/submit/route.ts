@@ -51,12 +51,6 @@ export async function POST(
       data: { submittedAt: new Date() },
     });
 
-    const totalQuestions = await prisma.question.count({
-      where: { quizId: sessionRoom.quizId },
-    });
-
-    const answeredCount = answers.length;
-
     try {
       await pusher.trigger(
         PUSHER_CHANNELS.teacher(code),
@@ -65,6 +59,36 @@ export async function POST(
       );
     } catch (pusherErr) {
       console.error("Pusher trigger failed (non-fatal):", pusherErr);
+    }
+
+    // Party mode: auto-end when all players submit or timer grace period has passed
+    if (sessionRoom.mode === "PARTY" && sessionRoom.status === "ACTIVE") {
+      const now = new Date();
+      const timerExpired =
+        sessionRoom.forcedEndAt !== null && now >= sessionRoom.forcedEndAt;
+
+      let shouldEnd = timerExpired;
+      if (!shouldEnd) {
+        const [total, submitted] = await Promise.all([
+          prisma.student.count({ where: { sessionId: sessionRoom.id } }),
+          prisma.student.count({
+            where: { sessionId: sessionRoom.id, submittedAt: { not: null } },
+          }),
+        ]);
+        shouldEnd = submitted >= total;
+      }
+
+      if (shouldEnd) {
+        await prisma.sessionRoom.update({
+          where: { code },
+          data: { status: "ENDED", endedAt: now },
+        });
+        try {
+          await pusher.trigger(PUSHER_CHANNELS.room(code), PUSHER_EVENTS.QUIZ_ENDED, {});
+        } catch (pusherErr) {
+          console.error("Pusher trigger failed (non-fatal):", pusherErr);
+        }
+      }
     }
 
     return NextResponse.json({ success: true });

@@ -66,8 +66,8 @@ model Quiz {
   id        String     @id @default(cuid())
   title     String
   timeLimit Int
-  teacherId String
-  teacher   User        @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId String?
+  teacher   User?       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   questions Question[]
   sessions  SessionRoom[]
   createdAt DateTime    @default(now())
@@ -101,17 +101,23 @@ model AnswerOption {
 }
 
 model SessionRoom {
-  id        String          @id @default(cuid())
-  code      String          @unique
-  quizId    String
-  teacherId String
-  quiz      Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  teacher   User             @relation(fields: [teacherId], references: [id], onDelete: Cascade, name: "UserSessionRooms")
-  status    SessionStatus    @default(LOBBY)
-  startedAt DateTime?
-  endedAt   DateTime?
-  students  Student[]
-  createdAt DateTime         @default(now())
+  id             String        @id @default(cuid())
+  code           String        @unique
+  quizId         String
+  teacherId      String?
+  quiz           Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  teacher        User?         @relation(fields: [teacherId], references: [id], onDelete: Cascade, name: "UserSessionRooms")
+  status         SessionStatus @default(LOBBY)
+  mode           SessionMode   @default(CLASSROOM)
+  hostToken      String?       @unique
+  hostName       String?
+  partyConfig    Json?
+  questionsReady Boolean       @default(false)
+  forcedEndAt    DateTime?
+  startedAt      DateTime?
+  endedAt        DateTime?
+  students       Student[]
+  createdAt      DateTime      @default(now())
 
   @@map("sessions")
 }
@@ -151,4 +157,9 @@ enum SessionStatus {
   LOBBY
   ACTIVE
   ENDED
+}
+
+enum SessionMode {
+  CLASSROOM
+  PARTY
 }

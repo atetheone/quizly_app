@@ -4,7 +4,7 @@ import { LOCALE_COOKIE, resolveLocale } from "@/i18n/locale";
 
 export function middleware(request: NextRequest) {
   // Public paths that don't require auth
-  const publicPaths = ["/", "/auth/login", "/auth/signup", "/join", "/play", "/api/auth", "/api/sessions", "/api/pusher"];
+  const publicPaths = ["/", "/auth/login", "/auth/signup", "/join", "/play", "/party", "/api/auth", "/api/sessions", "/api/pusher", "/api/party"];
   const isPublic = publicPaths.some((p) => request.nextUrl.pathname.startsWith(p));
 
   // For protected paths, we'll let the client-side auth handle the redirect

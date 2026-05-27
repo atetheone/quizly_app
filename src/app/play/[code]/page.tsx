@@ -25,7 +25,7 @@ export default function PlayPage() {
   const [phase, setPhase] = useState<Phase>("lobby");
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
-  const [sessionInfo, setSessionInfo] = useState<{ quizTitle: string; timeLimit: number } | null>(null);
+  const [sessionInfo, setSessionInfo] = useState<{ quizTitle: string; timeLimit: number; mode?: string } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQ, setCurrentQ] = useState(0);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -55,8 +55,8 @@ export default function PlayPage() {
     setStudentName(sname);
     fetch(`/api/sessions/${code}`).then((r) => r.json()).then((data) => {
       if (data.error) return;
-      setSessionInfo({ quizTitle: data.quizTitle, timeLimit: data.timeLimit });
-      if (data.status === "ACTIVE") { fetchQuiz(); }
+      setSessionInfo({ quizTitle: data.quizTitle, timeLimit: data.timeLimit, mode: data.mode });
+      if (data.status === "ACTIVE") { setPhase("active"); fetchQuiz(); startTimer(); }
     });
   }, [code]);
 
@@ -218,7 +218,9 @@ export default function PlayPage() {
               <span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--q-ink-3)", opacity: 0.3 + i * 0.2, animation: `pulse ${1 + i * 0.3}s infinite` }} />
             ))}
           </div>
-          <span style={{ fontSize: 14, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>{t("waitingForTeacher")}</span>
+          <span style={{ fontSize: 14, color: "var(--q-ink-3)", fontFamily: "var(--q-sans)" }}>
+            {sessionInfo?.mode === "PARTY" ? t("waitingForHost") : t("waitingForTeacher")}
+          </span>
         </div>
       </div>
     );
