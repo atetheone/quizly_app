@@ -90,7 +90,21 @@
     "toastGenerated": "{count, plural, one {# question générée — vérifiez et modifiez ci-dessous} other {# questions générées — vérifiez et modifiez ci-dessous}}",
     "toastImported": "Quiz importé !",
     "themeCustom": "Personnalisé…",
-    "themeCustomPlaceholder": "Saisissez votre propre sujet…"
+    "themeCustomPlaceholder": "Saisissez votre propre sujet…",
+    "themes": {
+      "scienceNature": "Sciences et nature",
+      "worldHistory": "Histoire du monde",
+      "geography": "Géographie",
+      "mathematics": "Mathématiques",
+      "technologyAI": "Technologie et IA",
+      "sports": "Sports",
+      "moviesTV": "Films et séries",
+      "music": "Musique",
+      "literature": "Littérature",
+      "foodCooking": "Gastronomie",
+      "spaceAstronomy": "Espace et astronomie",
+      "generalKnowledge": "Culture générale"
+    }
   },
   "landing": {
     "navHowItWorks": "Comment ça marche",

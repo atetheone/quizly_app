@@ -3,20 +3,22 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
-const PRESET_THEMES = [
-  "Science & Nature",
-  "World History",
-  "Geography",
-  "Mathematics",
-  "Technology & AI",
-  "Sports",
-  "Movies & TV",
-  "Music",
-  "Literature",
-  "Food & Cooking",
-  "Space & Astronomy",
-  "General Knowledge",
+const THEME_KEYS = [
+  "scienceNature",
+  "worldHistory",
+  "geography",
+  "mathematics",
+  "technologyAI",
+  "sports",
+  "moviesTV",
+  "music",
+  "literature",
+  "foodCooking",
+  "spaceAstronomy",
+  "generalKnowledge",
 ] as const;
+
+type ThemeKey = (typeof THEME_KEYS)[number];
 
 interface Props {
   value: string;
@@ -26,40 +28,47 @@ interface Props {
 
 export function ThemeSelector({ value, onChange, placeholder }: Props) {
   const t = useTranslations("import");
+  const tTheme = useTranslations("import.themes");
 
+  const findKey = (v: string): ThemeKey | null =>
+    THEME_KEYS.find((k) => tTheme(k) === v) ?? null;
+
+  const [selectedKey, setSelectedKey] = useState<ThemeKey | null>(
+    () => findKey(value)
+  );
   const [customActive, setCustomActive] = useState(
-    () => value !== "" && !(PRESET_THEMES as readonly string[]).includes(value)
+    () => value !== "" && findKey(value) === null
   );
 
-  function selectPreset(theme: string) {
+  function selectPreset(key: ThemeKey) {
+    setSelectedKey(key);
     setCustomActive(false);
-    onChange(theme);
+    onChange(tTheme(key));
   }
 
   function activateCustom() {
+    setSelectedKey(null);
     setCustomActive(true);
     onChange("");
   }
 
-  const activePreset = !customActive ? value : null;
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {PRESET_THEMES.map((theme) => (
+        {THEME_KEYS.map((key) => (
           <button
-            key={theme}
+            key={key}
             type="button"
-            onClick={() => selectPreset(theme)}
+            onClick={() => selectPreset(key)}
             className="q-chip"
             style={{
               cursor: "pointer",
-              background: activePreset === theme ? "var(--q-ink)" : "var(--q-bg-2)",
-              color: activePreset === theme ? "var(--q-bg)" : "var(--q-ink-2)",
-              fontWeight: activePreset === theme ? 600 : 400,
+              background: selectedKey === key ? "var(--q-ink)" : "var(--q-bg-2)",
+              color: selectedKey === key ? "var(--q-bg)" : "var(--q-ink-2)",
+              fontWeight: selectedKey === key ? 600 : 400,
             }}
           >
-            {theme}
+            {tTheme(key)}
           </button>
         ))}
         <button
