@@ -88,7 +88,9 @@
     "modeMixed": "Mixte",
     "generatedTitle": "{topic} · {mode}",
     "toastGenerated": "{count, plural, one {# question générée — vérifiez et modifiez ci-dessous} other {# questions générées — vérifiez et modifiez ci-dessous}}",
-    "toastImported": "Quiz importé !"
+    "toastImported": "Quiz importé !",
+    "themeCustom": "Personnalisé…",
+    "themeCustomPlaceholder": "Saisissez votre propre sujet…"
   },
   "landing": {
     "navHowItWorks": "Comment ça marche",

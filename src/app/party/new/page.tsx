@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { QLogo } from "@/components/q-ui";
+import { ThemeSelector } from "@/components/quiz/ThemeSelector";
 
 const DIFFICULTY_LEVELS = ["EASY", "MEDIUM", "HARD"] as const;
 type DifficultyLevel = (typeof DIFFICULTY_LEVELS)[number];
@@ -87,15 +88,7 @@ export default function PartyNewPage() {
             {/* Topic */}
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <label className="q-eyebrow">{t("topicLabel")}</label>
-              <input
-                className="q-input"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder={t("topicPlaceholder")}
-                maxLength={200}
-                required
-                style={{ fontSize: 16, padding: "12px 14px" }}
-              />
+              <ThemeSelector value={topic} onChange={setTopic} />
             </div>
 
             {/* Questions + Time limit */}

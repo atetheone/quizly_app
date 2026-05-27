@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
+import { ThemeSelector } from "@/components/quiz/ThemeSelector";
 
 type Level = "EASY" | "MEDIUM" | "HARD";
 const LEVELS: Level[] = ["EASY", "MEDIUM", "HARD"];
@@ -221,12 +222,7 @@ export default function ImportQuizPage() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 16, padding: "4px 20px 16px", alignItems: "flex-end" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, minWidth: 240 }}>
               <span className="q-eyebrow">{t("import.topic")}</span>
-              <input
-                className="q-input"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder={t("import.topicPlaceholder")}
-              />
+              <ThemeSelector value={topic} onChange={setTopic} />
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
