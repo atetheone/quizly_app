@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Bricolage_Grotesque } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/providers";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { ConditionalLanguageSwitcher } from "@/components/language-switcher";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,7 +55,7 @@ export default async function RootLayout({
         `}</style>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>{children}</Providers>
-          <LanguageSwitcher />
+          <ConditionalLanguageSwitcher />
         </NextIntlClientProvider>
       </body>
     </html>

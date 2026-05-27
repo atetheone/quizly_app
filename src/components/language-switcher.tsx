@@ -1,11 +1,19 @@
 "use client";
 
 import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { LOCALE_COOKIE, locales, type Locale } from "@/i18n/locale";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
+
+const GAME_ROUTES = ["/play/", "/party/", "/session/"];
+
+export function ConditionalLanguageSwitcher() {
+  const pathname = usePathname();
+  if (GAME_ROUTES.some((r) => pathname.startsWith(r))) return null;
+  return <LanguageSwitcher />;
+}
 
 /** Module-scope so the cookie write isn't a component-body side effect. */
 function writeLocaleCookie(locale: Locale) {
