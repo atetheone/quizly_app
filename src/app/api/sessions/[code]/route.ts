@@ -21,6 +21,8 @@ export async function GET(
       status: sessionRoom.status,
       quizTitle: sessionRoom.quiz.title,
       timeLimit: sessionRoom.quiz.timeLimit,
+      mode: sessionRoom.mode,
+      hostName: sessionRoom.hostName ?? null,
     });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

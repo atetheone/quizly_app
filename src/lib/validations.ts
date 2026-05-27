@@ -80,3 +80,16 @@ export const quizGenerateSchema = z
   );
 
 export type QuizGenerateInput = z.infer<typeof quizGenerateSchema>;
+
+export const partyCreateSchema = quizGenerateSchema.and(
+  z.object({
+    hostName: z.string().min(1, "Name is required").max(50, "Name too long"),
+    timeLimit: z
+      .number()
+      .int()
+      .min(1, "Time limit must be at least 1 minute")
+      .max(120, "Time limit max 120 minutes"),
+  })
+);
+
+export type PartyCreateInput = z.infer<typeof partyCreateSchema>;
