@@ -86,8 +86,8 @@ export default function EditQuizPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "var(--q-bg)", overflow: "hidden" }}>
       {/* topbar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div className="q-editor-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
+        <div className="q-editor-topbar-title-wrap" style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Link href="/dashboard" className="q-btn q-btn-ghost q-btn-sm">← {t("backToDashboard")}</Link>
           <input
             className="q-input"
@@ -109,12 +109,12 @@ export default function EditQuizPage() {
         </div>
       </div>
 
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div className="q-editor-layout" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* rail */}
-        <div style={{ width: 280, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", padding: 16, gap: 10, overflow: "auto", flexShrink: 0 }}>
+        <div className="q-editor-rail" style={{ width: 280, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", padding: 16, gap: 10, overflow: "auto", flexShrink: 0 }}>
           <span className="q-eyebrow">{t("questionsCount", { count: questions.length, max: 20 })}</span>
           {questions.map((q, i) => (
-            <div key={q.id} onClick={() => setActiveQ(i)} style={{ display: "flex", gap: 8, padding: 12, borderRadius: 10, cursor: "pointer", background: i === activeQ ? "var(--q-ink)" : "var(--q-bg)", color: i === activeQ ? "var(--q-bg)" : "var(--q-ink)", border: "1.5px solid " + (i === activeQ ? "var(--q-line)" : "var(--q-line-2)"), alignItems: "flex-start" }}>
+            <div key={q.id} className="q-editor-rail-item" onClick={() => setActiveQ(i)} style={{ display: "flex", gap: 8, padding: 12, borderRadius: 10, cursor: "pointer", background: i === activeQ ? "var(--q-ink)" : "var(--q-bg)", color: i === activeQ ? "var(--q-bg)" : "var(--q-ink)", border: "1.5px solid " + (i === activeQ ? "var(--q-line)" : "var(--q-line-2)"), alignItems: "flex-start" }}>
               <span style={{ opacity: 0.5, fontSize: 12, marginTop: 2 }}>≡</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
@@ -130,7 +130,7 @@ export default function EditQuizPage() {
         </div>
 
         {/* editor */}
-        <div style={{ flex: 1, padding: 36, overflow: "auto", display: "flex", flexDirection: "column", gap: 24 }}>
+        <div className="q-editor-main" style={{ flex: 1, padding: 36, overflow: "auto", display: "flex", flexDirection: "column", gap: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <span className="q-eyebrow">{t("questionCountLabel", { current: activeQ + 1, total: questions.length })}</span>

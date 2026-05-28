@@ -46,6 +46,7 @@ export default function SignupPage() {
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--q-bg)" }}>
       {/* indigo side */}
       <div
+        className="q-auth-side"
         style={{
           flex: "0 0 40%", background: "var(--q-indigo)", color: "#fff",
           display: "flex", flexDirection: "column", padding: 32,
@@ -88,6 +89,7 @@ export default function SignupPage() {
 
       {/* form side */}
       <div
+        className="q-auth-form"
         style={{
           flex: 1, display: "flex", flexDirection: "column", justifyContent: "center",
           padding: "40px 48px", gap: 16,

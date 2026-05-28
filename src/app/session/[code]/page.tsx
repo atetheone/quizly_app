@@ -242,13 +242,13 @@ function LiveView({ info, students, timeLeft, code, onEnd, ending }: { info: Ses
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "var(--q-bg)", overflow: "hidden" }}>
       {/* topbar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div className="q-live-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
+        <div className="q-live-topbar-left" style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className="q-dot q-dot-live" />
             <span className="q-eyebrow" style={{ color: "var(--q-coral)" }}>{t("badgeLive")}</span>
           </div>
-          <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22 }}>{info.quizTitle}</div>
+          <div className="q-live-topbar-quiz-title" style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22 }}>{info.quizTitle}</div>
           <span style={{ fontFamily: "var(--q-mono)", fontSize: 12, color: "var(--q-ink-3)" }}>
             {t("codeLabel")} <b style={{ color: "var(--q-ink)" }}>{code}</b>
           </span>
@@ -389,7 +389,7 @@ function ReportView({ code, onBack }: { code: string; onBack: () => void }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "var(--q-bg)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px", borderBottom: "1px solid var(--q-line-2)" }}>
+      <div className="q-report-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px", borderBottom: "1px solid var(--q-line-2)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span className="q-chip q-chip-green" style={{ fontSize: 11 }}>✓ {t("badgeEnded")}</span>
           <div style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 22 }}>

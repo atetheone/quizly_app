@@ -110,9 +110,10 @@ export default function PartyHostPage() {
   const allPlayers = [hostName, ...players];
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "var(--q-bg)" }}>
+    <div className="q-party-host-split" style={{ display: "flex", height: "100vh", background: "var(--q-bg)" }}>
       {/* Left: code + QR */}
       <div
+        className="q-party-host-left"
         style={{
           flex: "1.4 1 0",
           background: "var(--q-ink)",
@@ -180,7 +181,7 @@ export default function PartyHostPage() {
       </div>
 
       {/* Right: player roster + start button */}
-      <div style={{ flex: 1, padding: 28, display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="q-party-host-right" style={{ flex: 1, padding: 28, display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <span className="q-eyebrow">{t("playersCount", { count: allPlayers.length })}</span>

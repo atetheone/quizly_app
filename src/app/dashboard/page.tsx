@@ -192,15 +192,15 @@ export default function DashboardPage() {
       </aside>
 
       {/* Main */}
-      <main style={{ flex: 1, overflow: "auto", padding: 28, display: "flex", flexDirection: "column", gap: 24 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <main className="q-dashboard-main" style={{ flex: 1, overflow: "auto", padding: 28, display: "flex", flexDirection: "column", gap: 24 }}>
+        <div className="q-dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <span className="q-eyebrow">{format.dateTime(today, { weekday: "long", month: "long", day: "numeric" })}</span>
             <div style={{ fontFamily: "var(--q-display)", fontWeight: 700, fontSize: 40, letterSpacing: "-0.025em", marginTop: 4 }}>
               {t(greetingKey, { name: firstName })}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="q-dashboard-header-actions" style={{ display: "flex", gap: 8 }}>
             <Link href="/quiz/import?generate=1" className="q-btn q-btn-sm">{t("generate")}</Link>
             <Link href="/quiz/import" className="q-btn q-btn-sm">{t("importFromText")}</Link>
             <Link href="/quiz/new" className="q-btn q-btn-primary q-btn-sm">{t("newQuiz")}</Link>
@@ -221,7 +221,8 @@ export default function DashboardPage() {
                 <div style={{ color: "var(--q-ink-3)", fontSize: 15, fontFamily: "var(--q-sans)" }}>{t("noPastSessionsDescription")}</div>
               </div>
             ) : (
-              <div className="q-card" style={{ overflow: "hidden" }}>
+              <div className="q-card q-sessions-table-wrap" style={{ overflow: "hidden" }}>
+                <div className="q-sessions-table-inner">
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", background: "var(--q-bg-2)", fontFamily: "var(--q-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--q-ink-3)", borderBottom: "1.5px solid var(--q-line)" }}>
                   <div>{t("tableQuiz")}</div><div>{t("tableDate")}</div><div>{t("tableStudents")}</div><div>{t("tableAvg")}</div>
                 </div>
@@ -250,6 +251,7 @@ export default function DashboardPage() {
                     </div>
                   </Link>
                 ))}
+                </div>
               </div>
             )}
           </>
