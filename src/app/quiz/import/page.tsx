@@ -153,7 +153,7 @@ export default function ImportQuizPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "var(--q-bg)", overflow: "hidden" }}>
       {/* topbar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
+      <div className="q-import-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Link href="/dashboard" className="q-btn q-btn-ghost q-btn-sm">← {t("import.dashboard")}</Link>
           <span style={{ fontFamily: "var(--q-display)", fontWeight: 600, fontSize: 20, letterSpacing: "-0.02em" }}>{t("import.pageTitle")}</span>
@@ -170,7 +170,7 @@ export default function ImportQuizPage() {
       </div>
 
       {/* meta strip */}
-      <div style={{ display: "flex", gap: 16, padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)", alignItems: "flex-end", background: "var(--q-bg-2)" }}>
+      <div className="q-import-meta" style={{ display: "flex", gap: 16, padding: "12px 20px", borderBottom: "1px solid var(--q-line-2)", alignItems: "flex-end", background: "var(--q-bg-2)" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, maxWidth: 360 }}>
           <span className="q-eyebrow">{t("import.quizTitle")}</span>
           <input
@@ -300,7 +300,7 @@ export default function ImportQuizPage() {
         )}
       </div>
 
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div className="q-import-split" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* text editor */}
         <div style={{ flex: 1, borderRight: "1px solid var(--q-line-2)", background: "var(--q-bg-2)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderBottom: "1px solid var(--q-line-2)" }}>

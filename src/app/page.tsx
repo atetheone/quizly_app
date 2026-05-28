@@ -12,13 +12,14 @@ export default async function HomePage() {
     <div style={{ minHeight: "100vh", background: "var(--q-bg)", display: "flex", flexDirection: "column" }}>
       {/* Nav */}
       <nav
+        className="q-home-nav"
         style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "16px 40px", borderBottom: "1px solid var(--q-line-2)",
         }}
       >
         <QLogo size={30} />
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="q-home-nav-links" style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Link href="/party" style={{ fontSize: 14, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)", textDecoration: "none" }}>{tp("navPlay")}</Link>
           <span style={{ fontSize: 14, color: "var(--q-ink-2)", fontFamily: "var(--q-sans)", cursor: "pointer" }}>{t("navForTeachers")}</span>
           <Link href="/auth/login" className="q-btn q-btn-sm">{t("navLogin")}</Link>
@@ -28,7 +29,7 @@ export default async function HomePage() {
 
       <main style={{ flex: 1 }}>
         {/* Hero — dual entry */}
-        <div style={{ padding: "56px 64px 40px", display: "flex", flexDirection: "column", gap: 40 }}>
+        <div className="q-home-hero" style={{ padding: "56px 64px 40px", display: "flex", flexDirection: "column", gap: 40 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className="q-chip q-chip-yellow" style={{ fontWeight: 600 }}>
               <span className="q-dot q-dot-live" /> {t("badgeRealTime")}
@@ -121,7 +122,7 @@ export default async function HomePage() {
         </div>
 
         {/* How it works — two tracks */}
-        <div style={{ padding: "0 64px 56px" }}>
+        <div className="q-home-how" style={{ padding: "0 64px 56px" }}>
           <div style={{ marginBottom: 24 }}>
             <span className="q-eyebrow">How it works</span>
           </div>
